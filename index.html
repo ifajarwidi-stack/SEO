@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👽 Jarvis here....at your service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; 
+            /* Subtle dot pattern for modern tech look */
+            background-image: radial-gradient(rgba(220, 38, 38, 0.04) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #e2e8f0; 
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1; 
+        }
+        /* Markdown Article Styles - Enhanced */
+        .article-content {
+            color: #334155;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        .article-content h1 { font-size: 2.25rem; font-weight: 800; margin-top: 2rem; margin-bottom: 1.25rem; color: #0f172a; letter-spacing: -0.025em; line-height: 1.2;}
+        .article-content h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #0f172a; letter-spacing: -0.025em; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;}
+        .article-content h3 { font-size: 1.35rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #1e293b; }
+        .article-content p { margin-bottom: 1.25rem; }
+        .article-content ul, .article-content ol { margin-left: 1.5rem; margin-bottom: 1.25rem; }
+        .article-content ul { list-style-type: none; }
+        .article-content ul li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+        .article-content ul li::before { content: "•"; color: #dc2626; position: absolute; left: 0; font-weight: bold; font-size: 1.2em; top: -2px; }
+        .article-content ol { list-style-type: decimal; }
+        .article-content li { margin-bottom: 0.5rem; }
+        .article-content strong { font-weight: 700; color: #0f172a; }
+        .article-content blockquote { border-left: 4px solid #dc2626; font-style: italic; color: #64748b; background: #f8fafc; padding: 1rem 1rem 1rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.25rem; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col selection:bg-red-100 selection:text-red-900">
+
+    <!-- Glassmorphism Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 py-5 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-xl shadow-sm border border-red-100">👽</div>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+                    Jarvis <span class="font-light text-gray-400">here....at your service</span>
+                </h1>
+            </div>
+            <span class="text-xs font-bold bg-white text-red-600 px-3 py-1.5 rounded-full border border-red-200 shadow-sm flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                SEO Tools
+            </span>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <!-- Error/Message Alert Box -->
+        <div id="messageBox" class="hidden mb-8 p-4 rounded-xl border transform transition-all duration-300" role="alert">
+            <div class="flex items-center">
+                <svg id="messageIcon" class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                <span id="messageText" class="font-medium text-sm"></span>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden mb-8 relative">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+            <div class="p-6 sm:p-10">
+                <div class="flex items-center mb-8">
+                    <div class="w-1.5 h-6 bg-red-600 rounded-full mr-3"></div>
+                    <h2 class="text-xl font-bold text-gray-900">Detail Artikel</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
+                    <!-- Judul Article -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="judul" class="block text-sm font-semibold text-gray-700 mb-2">Judul Artikel</label>
+                        <input type="text" id="judul" placeholder="Contoh: Cara Memulai Investasi Saham untuk Pemula" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300">
+                    </div>
+
+                    <!-- Segment -->
+                    <div class="col-span-1">
+                        <label for="segment" class="block text-sm font-semibold text-gray-700 mb-2">Segmen</label>
+                        <select id="segment" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 appearance-none" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
+                            <option value="" disabled selected>Pilih target audiens</option>
+                            <option value="Emerging Affluence">Emerging Affluence</option>
+                            <option value="Private Banking">Private Banking</option>
+                            <option value="Private">Private</option>
+                            <option value="Business">Business</option>
+                            <option value="Syariah">Syariah</option>
+                        </select>
+                    </div>
+
+                    <!-- Gaya Bahasa -->
+                    <div class="col-span-1">
+                        <label for="gayaBahasa" class="block text-sm font-semibold text-gray-700 mb-2">Gaya Bahasa</label>
+                        <select id="gayaBahasa" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 appearance-none" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
+                            <option value="" disabled selected>Pilih gaya bahasa</option>
+                            <option value="Casual">Casual</option>
+                            <option value="Formal">Formal</option>
+                            <option value="Edukatif">Edukatif</option>
+                            <option value="Persuasif">Persuasif</option>
+                            <option value="Humor">Humor</option>
+                        </select>
+                    </div>
+
+                    <!-- Keyword -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="keyword" class="block text-sm font-semibold text-gray-700 mb-2">Keyword <span class="text-gray-400 font-normal">(Pisahkan dengan koma)</span></label>
+                        <input type="text" id="keyword" placeholder="Contoh: investasi saham, reksadana, pasar modal" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300">
+                    </div>
+
+                    <!-- Panjang Artikel -->
+                    <div class="col-span-1 md:col-span-2 bg-gray-50/50 p-5 rounded-xl border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <label for="panjangArtikel" class="block text-sm font-semibold text-gray-700">Panjang Artikel</label>
+                            <div class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm flex items-center">
+                                <span id="panjangValue" class="text-sm font-bold text-red-600">1000</span>
+                                <span class="text-xs text-gray-500 ml-1">kata</span>
+                            </div>
+                        </div>
+                        <input type="range" id="panjangArtikel" min="100" max="2000" step="50" value="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600">
+                    </div>
+                </div>
+
+                <!-- Action: Generate Meta -->
+                <div class="mt-8 flex justify-end">
+                    <button id="btnGenerateMeta" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-[0_4px_14px_0_rgba(220,38,38,0.39)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.23)] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center min-w-[220px]">
+                        <span>Dapatkan Meta SEO</span>
+                        <svg id="metaSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Section -->
+        <div id="metaSection" class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden mb-8 hidden opacity-0 translate-y-4 transition-all duration-500 relative">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+            <div class="p-6 sm:p-10">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center">
+                        <div class="w-1.5 h-6 bg-red-600 rounded-full mr-3"></div>
+                        <h2 class="text-xl font-bold text-gray-900">Hasil Meta SEO</h2>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label for="metaTitle" class="block text-sm font-semibold text-gray-700">Meta Title</label>
+                            <span id="titleCounter" class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">0/60</span>
+                        </div>
+                        <input type="text" id="metaTitle" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 font-medium">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label for="metaDescription" class="block text-sm font-semibold text-gray-700">Meta Description</label>
+                            <span id="descCounter" class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">0/160</span>
+                        </div>
+                        <textarea id="metaDescription" rows="3" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 resize-y leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Action: Generate Article -->
+                <div class="mt-10 pt-8 border-t border-gray-100 flex justify-end">
+                    <button id="btnGenerateArticle" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl shadow-[0_4px_14px_0_rgba(220,38,38,0.39)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.23)] transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center min-w-[240px] text-lg group">
+                        <svg class="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <span>Buat Artikel</span>
+                        <svg id="articleSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article Section -->
+        <div id="articleSection" class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden hidden opacity-0 translate-y-4 transition-all duration-500 relative">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+            <div class="p-6 sm:p-10 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                <div class="flex items-center">
+                    <div class="w-1.5 h-6 bg-red-600 rounded-full mr-3"></div>
+                    <h2 class="text-xl font-bold text-gray-900">Hasil Artikel</h2>
+                </div>
+                <button id="btnCopy" class="text-gray-600 hover:text-red-600 transition-all flex items-center text-sm font-semibold px-4 py-2 border border-gray-200 rounded-lg hover:border-red-200 hover:bg-red-50 bg-white shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    Copy Artikel
+                </button>
+            </div>
+            <div class="p-6 sm:p-12">
+                <div id="articleContent" class="article-content">
+                    <!-- Generated content will be injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-100 mt-auto py-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center gap-4">
+            <p class="text-sm text-gray-500 font-medium leading-relaxed max-w-2xl">
+                <span class="italic text-gray-400">"Walau sudah tak di sini, biarkan hati saya tetap bersama kalian. Rawat kontennya, jaga kualitasnya. Terus tumbuh bersama OCBC karena Tidak Ada Yang Tidak Bisa! ~ Jarvis 2026"</span>
+            </p>
+            <div class="h-px w-12 bg-gray-200 my-1"></div>
+            <p class="text-xs font-bold text-gray-800 uppercase tracking-widest">
+                Powered by <span class="text-red-500 text-base align-middle mx-1">💖</span> to Marcopolo Team
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // API Configuration
+        const API_KEY = ""; // Provided automatically by environment
+        const MODEL_NAME = "gemini-3-flash-preview";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+
+        // DOM Elements
+        const elSlider = document.getElementById('panjangArtikel');
+        const elSliderValue = document.getElementById('panjangValue');
+        
+        const inJudul = document.getElementById('judul');
+        const inSegment = document.getElementById('segment');
+        const inGaya = document.getElementById('gayaBahasa');
+        const inKeyword = document.getElementById('keyword');
+        
+        const btnGenMeta = document.getElementById('btnGenerateMeta');
+        const metaSpinner = document.getElementById('metaSpinner');
+        
+        const secMeta = document.getElementById('metaSection');
+        const inMetaTitle = document.getElementById('metaTitle');
+        const inMetaDesc = document.getElementById('metaDescription');
+        const countTitle = document.getElementById('titleCounter');
+        const countDesc = document.getElementById('descCounter');
+        
+        const btnGenArticle = document.getElementById('btnGenerateArticle');
+        const articleSpinner = document.getElementById('articleSpinner');
+        
+        const secArticle = document.getElementById('articleSection');
+        const outArticle = document.getElementById('articleContent');
+        const btnCopy = document.getElementById('btnCopy');
+
+        const msgBox = document.getElementById('messageBox');
+        const msgText = document.getElementById('messageText');
+
+        // Update slider value display
+        elSlider.addEventListener('input', (e) => {
+            elSliderValue.textContent = `${e.target.value}`;
+        });
+
+        // Update character counters for Meta fields
+        inMetaTitle.addEventListener('input', (e) => {
+            const len = e.target.value.length;
+            countTitle.textContent = `${len}/60`;
+            countTitle.className = len > 60 ? 'text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded' : 'text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded';
+        });
+
+        inMetaDesc.addEventListener('input', (e) => {
+            const len = e.target.value.length;
+            countDesc.textContent = `${len}/160`;
+            countDesc.className = len > 160 ? 'text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded' : 'text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded';
+        });
+
+        // Helper to show messages
+        function showMessage(msg, type = 'error') {
+            msgText.textContent = msg;
+            msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-800', 'border-red-200', 'bg-green-50', 'text-green-800', 'border-green-200');
+            
+            if (type === 'error') {
+                msgBox.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+            } else {
+                msgBox.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Auto hide success messages after 3s
+            if(type === 'success') {
+                setTimeout(() => {
+                    msgBox.classList.add('hidden');
+                }, 4000);
+            }
+        }
+
+        // Helper to validate inputs
+        function validateInputs() {
+            if (!inJudul.value.trim()) return "Silakan isi Judul Artikel.";
+            if (!inSegment.value) return "Silakan pilih Segment audiens.";
+            if (!inGaya.value) return "Silakan pilih Gaya Bahasa.";
+            if (!inKeyword.value.trim()) return "Silakan masukkan Keyword.";
+            return null;
+        }
+
+        btnGenMeta.addEventListener('click', async () => {
+            msgBox.classList.add('hidden');
+            const error = validateInputs();
+            if (error) {
+                showMessage(error, 'error');
+                return;
+            }
+
+            btnGenMeta.disabled = true;
+            btnGenMeta.classList.add('opacity-75', 'cursor-not-allowed');
+            metaSpinner.classList.remove('hidden');
+
+            const prompt = `Anda adalah pakar SEO Spesialis Finansial. Buatkan Meta Title (maksimal 60 karakter) dan Meta Description (maksimal 160 karakter) yang sangat mengundang klik (CTR tinggi) berdasarkan data berikut:
+- Judul Artikel: ${inJudul.value}
+- Segment Pembaca: ${inSegment.value}
+- Gaya Bahasa: ${inGaya.value}
+- Target Keyword: ${inKeyword.value}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            meta_title: { type: "STRING" },
+                            meta_description: { type: "STRING" }
+                        },
+                        required: ["meta_title", "meta_description"]
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error("Gagal menghubungi server AI. Silakan coba lagi.");
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                    const resultJson = JSON.parse(data.candidates[0].content.parts[0].text);
+                    
+                    inMetaTitle.value = resultJson.meta_title;
+                    inMetaDesc.value = resultJson.meta_description;
+                    
+                    inMetaTitle.dispatchEvent(new Event('input'));
+                    inMetaDesc.dispatchEvent(new Event('input'));
+
+                    secMeta.classList.remove('hidden');
+                    setTimeout(() => {
+                        secMeta.classList.remove('opacity-0', 'translate-y-4');
+                        secMeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 50);
+
+                    showMessage("Meta SEO berhasil dibuat! Silakan review dan edit jika diperlukan.", "success");
+                } else {
+                    throw new Error("Format respons dari AI tidak sesuai.");
+                }
+
+            } catch (err) {
+                showMessage(err.message, 'error');
+            } finally {
+                btnGenMeta.disabled = false;
+                btnGenMeta.classList.remove('opacity-75', 'cursor-not-allowed');
+                metaSpinner.classList.add('hidden');
+            }
+        });
+
+        btnGenArticle.addEventListener('click', async () => {
+            msgBox.classList.add('hidden');
+            
+            if (!inMetaTitle.value.trim() || !inMetaDesc.value.trim()) {
+                showMessage("Meta Title dan Description tidak boleh kosong.", "error");
+                return;
+            }
+
+            btnGenArticle.disabled = true;
+            btnGenArticle.classList.add('opacity-75', 'cursor-not-allowed');
+            articleSpinner.classList.remove('hidden');
+            btnGenArticle.querySelector('span').textContent = "Sedang Menulis...";
+
+            const prompt = `Anda adalah penulis konten edukasi finansial profesional dan pakar SEO.
+Tugas Anda adalah menulis artikel edukasi finansial berdasarkan parameter berikut:
+- Topik / Judul: ${inJudul.value}
+- Segment Pembaca: ${inSegment.value}
+- Gaya Bahasa: ${inGaya.value}
+- Kata Kunci Utama: ${inKeyword.value}
+- Panduan Meta Title: ${inMetaTitle.value}
+- Panduan Meta Description: ${inMetaDesc.value}
+- Estimasi Panjang Artikel: Sekitar ${elSlider.value} kata.
+
+Instruksi Penulisan:
+1. Tuliskan dalam format Markdown yang rapi.
+2. Gunakan heading (H1 untuk judul utama, H2 untuk subjudul, H3 jika perlu).
+3. Buat pembukaan yang menarik (hook pembaca sesuai gaya bahasa yang dipilih).
+4. Pastikan kata kunci dimasukkan secara natural, jangan memaksakan (keyword stuffing).
+5. Berikan insight finansial yang akurat dan bernilai bagi segmen ${inSegment.value}.
+6. Berikan kesimpulan dan call-to-action (CTA) ringan di akhir artikel.
+7. Jangan tambahkan komentar di luar isi artikel (seperti "Ini artikel Anda..."). Langsung output teks artikelnya saja.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error("Gagal mengenerate artikel. Silakan coba lagi.");
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                    const markdownText = data.candidates[0].content.parts[0].text;
+                    const htmlContent = marked.parse(markdownText);
+                    outArticle.innerHTML = htmlContent;
+
+                    secArticle.classList.remove('hidden');
+                    setTimeout(() => {
+                        secArticle.classList.remove('opacity-0', 'translate-y-4');
+                        secArticle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 50);
+
+                    showMessage("Artikel berhasil dibuat!", "success");
+                } else {
+                    throw new Error("Gagal mengekstrak teks artikel dari respons AI.");
+                }
+
+            } catch (err) {
+                showMessage(err.message, 'error');
+            } finally {
+                btnGenArticle.disabled = false;
+                btnGenArticle.classList.remove('opacity-75', 'cursor-not-allowed');
+                articleSpinner.classList.add('hidden');
+                btnGenArticle.querySelector('span').textContent = "Buat Artikel";
+            }
+        });
+
+        btnCopy.addEventListener('click', () => {
+            const range = document.createRange();
+            range.selectNode(outArticle);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                
+                const originalContent = btnCopy.innerHTML;
+                btnCopy.innerHTML = `<svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="text-green-600">Berhasil Disalin!</span>`;
+                btnCopy.classList.add('border-green-600', 'bg-green-50');
+                
+                setTimeout(() => {
+                    btnCopy.innerHTML = originalContent;
+                    btnCopy.classList.remove('border-green-600', 'bg-green-50');
+                }, 2000);
+            } catch(err) {
+                showMessage("Gagal menyalin teks. Silakan blok dan salin secara manual.", "error");
+            }
+            window.getSelection().removeAllRanges();
+        });
+
+    </script>
+</body>
+</html>
