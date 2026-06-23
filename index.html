@@ -3,400 +3,1152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👽 Jarvis here....at your service</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Jarvis SEO — AI Content Studio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Three.js for WebGL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red: #dc2626;
+            --red-dark: #b91c1c;
+            --red-glow: rgba(220,38,38,0.35);
+            --purple: #7c3aed;
+            --purple-glow: rgba(124,58,237,0.3);
+            --bg: #06060f;
+            --bg-card: rgba(255,255,255,0.035);
+            --border: rgba(255,255,255,0.07);
+            --text: #f1f5f9;
+            --muted: #64748b;
+        }
+
+        html { scroll-behavior: smooth; }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff; 
-            /* Subtle dot pattern for modern tech look */
-            background-image: radial-gradient(rgba(220, 38, 38, 0.04) 1px, transparent 1px);
-            background-size: 32px 32px;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
         }
-        /* Custom scrollbar for textareas */
-        textarea::-webkit-scrollbar {
-            width: 8px;
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+        /* ── NAV ── */
+        #nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1.4rem 2.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
         }
-        textarea::-webkit-scrollbar-track {
-            background: transparent; 
+        #nav.scrolled {
+            padding: 0.9rem 2.5rem;
+            background: rgba(6,6,15,0.88);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
         }
-        textarea::-webkit-scrollbar-thumb {
-            background: #e2e8f0; 
-            border-radius: 10px;
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 0 20px var(--red-glow);
         }
-        textarea::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1; 
+        .nav-logo-text { font-weight: 800; font-size: 1.05rem; color: white; letter-spacing: -0.02em; }
+        .nav-logo-text span { color: var(--red); }
+        .nav-links { display: flex; align-items: center; gap: 2.5rem; }
+        .nav-link {
+            font-size: 0.85rem; font-weight: 500; color: var(--muted);
+            text-decoration: none; transition: color 0.2s;
         }
-        /* Markdown Article Styles - Enhanced */
-        .article-content {
-            color: #334155;
-            font-size: 1.05rem;
-            line-height: 1.8;
+        .nav-link:hover { color: white; }
+        .nav-cta {
+            font-size: 0.85rem; font-weight: 700;
+            padding: 0.6rem 1.25rem; border-radius: 10px;
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            color: white; text-decoration: none;
+            box-shadow: 0 0 18px var(--red-glow);
+            transition: all 0.3s ease;
         }
-        .article-content h1 { font-size: 2.25rem; font-weight: 800; margin-top: 2rem; margin-bottom: 1.25rem; color: #0f172a; letter-spacing: -0.025em; line-height: 1.2;}
-        .article-content h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #0f172a; letter-spacing: -0.025em; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;}
-        .article-content h3 { font-size: 1.35rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #1e293b; }
-        .article-content p { margin-bottom: 1.25rem; }
-        .article-content ul, .article-content ol { margin-left: 1.5rem; margin-bottom: 1.25rem; }
-        .article-content ul { list-style-type: none; }
-        .article-content ul li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
-        .article-content ul li::before { content: "•"; color: #dc2626; position: absolute; left: 0; font-weight: bold; font-size: 1.2em; top: -2px; }
-        .article-content ol { list-style-type: decimal; }
-        .article-content li { margin-bottom: 0.5rem; }
-        .article-content strong { font-weight: 700; color: #0f172a; }
-        .article-content blockquote { border-left: 4px solid #dc2626; font-style: italic; color: #64748b; background: #f8fafc; padding: 1rem 1rem 1rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.25rem; }
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 0 30px var(--red-glow); }
+
+        /* ── HERO ── */
+        #hero {
+            position: relative; width: 100%; height: 100vh; min-height: 680px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        #hero-bg {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(124,58,237,0.12) 0%, rgba(220,38,38,0.06) 40%, transparent 70%),
+                        radial-gradient(ellipse 40% 60% at 80% 20%, rgba(220,38,38,0.08) 0%, transparent 60%),
+                        var(--bg);
+        }
+        #webgl-canvas {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        #hero-fade {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 220px; z-index: 2;
+            background: linear-gradient(to bottom, transparent, var(--bg));
+        }
+        .hero-content {
+            position: relative; z-index: 10;
+            text-align: center; max-width: 860px; padding: 0 1.5rem;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(220,38,38,0.08);
+            border: 1px solid rgba(220,38,38,0.2);
+            border-radius: 9999px; padding: 5px 16px;
+            font-size: 0.75rem; font-weight: 600; color: #fca5a5;
+            margin-bottom: 2rem;
+        }
+        .badge-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--red);
+            animation: pulse-badge 2s infinite;
+        }
+        @keyframes pulse-badge {
+            0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(220,38,38,0.5); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(220,38,38,0); }
+        }
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 8vw, 6.5rem);
+            font-weight: 800; line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 1.5rem;
+        }
+        .hero-title-line { display: block; overflow: hidden; }
+        .hero-title-inner { display: block; }
+        .hero-title .solid { color: white; }
+        .hero-title .grad {
+            background: linear-gradient(135deg, #fff 0%, #dc2626 45%, #7c3aed 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-sub {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: #94a3b8; line-height: 1.7;
+            max-width: 560px; margin: 0 auto 2.5rem;
+        }
+        .hero-cta-group { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0.9rem 2rem; border-radius: 12px; font-weight: 700; font-size: 0.95rem;
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            color: white; text-decoration: none; border: none; cursor: pointer;
+            box-shadow: 0 0 30px var(--red-glow), 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .btn-primary::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%); transition: transform 0.5s ease;
+        }
+        .btn-primary:hover::before { transform: translateX(100%); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px var(--red-glow), 0 12px 30px rgba(0,0,0,0.35); }
+        .btn-ghost {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0.9rem 2rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+            color: #94a3b8; text-decoration: none; border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03); transition: all 0.3s ease;
+        }
+        .btn-ghost:hover { color: white; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); }
+        .hero-scroll {
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            z-index: 10; animation: float-scroll 2.5s ease-in-out infinite;
+        }
+        @keyframes float-scroll {
+            0%,100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+        .scroll-text { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+        .scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--muted), transparent); }
+
+        /* ── GLOW ORBS ── */
+        .orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); pointer-events: none;
+        }
+
+        /* ── SECTIONS ── */
+        section { position: relative; }
+
+        .section-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-label {
+            display: inline-block;
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--red);
+            margin-bottom: 0.75rem;
+        }
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800; color: white;
+            letter-spacing: -0.03em; line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+        .section-sub { font-size: 1.05rem; color: var(--muted); max-width: 480px; margin: 0 auto; line-height: 1.7; }
+
+        /* ── FEATURES ── */
+        #features { padding: 7rem 0; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+
+        @media (max-width: 768px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 2.25rem 2rem;
+            transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+            cursor: default;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(220,38,38,0.25);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.35), 0 0 40px rgba(220,38,38,0.07);
+        }
+        .feature-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .feature-icon.red { background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.15); }
+        .feature-icon.purple { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.15); }
+        .feature-icon.orange { background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.15); }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 0.75rem; }
+        .feature-card p { font-size: 0.875rem; color: var(--muted); line-height: 1.75; }
+        .feature-link { display: flex; align-items: center; gap: 6px; margin-top: 1.5rem; font-size: 0.8rem; font-weight: 600; }
+        .feature-link.red { color: var(--red); }
+        .feature-link.purple { color: #a78bfa; }
+        .feature-link.orange { color: #fb923c; }
+
+        /* ── STATS ── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 1px; margin-top: 5rem;
+            border-top: 1px solid var(--border); padding-top: 4rem;
+        }
+        .stat-item { text-align: center; padding: 0 1rem; }
+        .stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700;
+            background: linear-gradient(135deg, white 0%, var(--red) 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+
+        /* ── TOOL SECTION ── */
+        #tool { padding: 7rem 0 6rem; }
+        .tool-inner { max-width: 780px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* ── GLASS CARDS ── */
+        .glass {
+            background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 20px;
+        }
+        .glass.accent { border-color: rgba(220,38,38,0.15); }
+
+        .card-topline {
+            height: 2px; border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, var(--red), var(--purple), transparent);
+        }
+
+        /* ── FORM ELEMENTS ── */
+        .form-label {
+            display: block; font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 0.6rem;
+        }
+        .dark-input {
+            width: 100%; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+            color: var(--text); padding: 14px 16px;
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            outline: none; transition: all 0.3s ease;
+            appearance: none;
+        }
+        .dark-input::placeholder { color: rgba(255,255,255,0.2); }
+        .dark-input:focus {
+            border-color: rgba(220,38,38,0.45);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 0 4px rgba(220,38,38,0.08);
+        }
+        select.dark-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; }
+        select.dark-input option { background: #12121f; color: var(--text); }
+        .range-track {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 1.25rem;
+        }
+        input[type="range"] {
+            appearance: none; width: 100%; height: 3px;
+            background: rgba(255,255,255,0.08); border-radius: 9999px; outline: none; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: var(--red); cursor: pointer;
+            box-shadow: 0 0 12px var(--red-glow), 0 0 0 3px rgba(220,38,38,0.2);
+        }
+        .range-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .range-val {
+            background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.2);
+            border-radius: 8px; padding: 3px 12px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .range-val-num { color: var(--red); font-weight: 700; font-size: 0.9rem; }
+        .range-val-unit { color: var(--muted); font-size: 0.72rem; }
+
+        .card-section-head { display: flex; align-items: center; margin-bottom: 2rem; }
+        .red-bar { width: 3px; height: 22px; background: linear-gradient(to bottom, var(--red), var(--purple)); border-radius: 9999px; margin-right: 12px; }
+        .card-section-title { font-size: 1rem; font-weight: 700; color: white; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .full { grid-column: 1 / -1; }
+
+        /* ── BUTTONS ── */
+        .btn-submit {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0.85rem 2rem; border-radius: 12px;
+            font-weight: 700; font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            color: white; border: none; cursor: pointer;
+            box-shadow: 0 0 25px var(--red-glow);
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .btn-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+        .btn-submit:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 0 40px var(--red-glow); }
+        .btn-submit::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            transform: translateX(-100%); transition: transform 0.5s;
+        }
+        .btn-submit:not(:disabled):hover::before { transform: translateX(100%); }
+
+        .spinner {
+            width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── MESSAGE BOX ── */
+        .msg-box {
+            border-radius: 12px; padding: 0.85rem 1rem;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;
+        }
+        .msg-box.error { background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.25); color: #fca5a5; }
+        .msg-box.success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #86efac; }
+        .msg-box.hidden { display: none; }
+
+        /* ── COUNTER BADGE ── */
+        .counter-badge { font-size: 0.7rem; color: var(--muted); background: rgba(255,255,255,0.04); padding: 2px 10px; border-radius: 6px; }
+        .counter-badge.over { color: #f87171; background: rgba(220,38,38,0.1); }
+
+        /* ── COPY BUTTON ── */
+        .copy-btn {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.8rem; font-weight: 600; color: var(--muted);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 6px 14px; background: rgba(255,255,255,0.03);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: white; border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); }
+
+        /* ── ARTICLE CONTENT ── */
+        .article-content { color: #cbd5e1; font-size: 0.95rem; line-height: 1.85; }
+        .article-content h1 { font-size: 1.8rem; font-weight: 800; margin: 1.25rem 0 0.875rem; color: white; letter-spacing: -0.02em; }
+        .article-content h2 { font-size: 1.35rem; font-weight: 700; margin: 1.5rem 0 0.75rem; color: #f1f5f9; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.5rem; }
+        .article-content h3 { font-size: 1.1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; color: #e2e8f0; }
+        .article-content p { margin-bottom: 1rem; }
+        .article-content ul { list-style: none; margin: 0 0 1rem 0; }
+        .article-content ul li { position: relative; padding-left: 1.5rem; margin-bottom: 0.4rem; }
+        .article-content ul li::before { content: "›"; color: var(--red); position: absolute; left: 0; font-weight: 700; font-size: 1.1em; }
+        .article-content ol { list-style: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .article-content strong { font-weight: 700; color: white; }
+        .article-content blockquote { border-left: 3px solid var(--red); padding: 0.875rem 1rem; background: rgba(220,38,38,0.05); border-radius: 0 10px 10px 0; color: #94a3b8; margin-bottom: 1rem; font-style: italic; }
+        .article-content code { background: rgba(255,255,255,0.07); padding: 2px 7px; border-radius: 5px; font-family: monospace; font-size: 0.85rem; color: #fca5a5; }
+
+        /* ── DIVIDER ── */
+        .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid var(--border); padding: 3.5rem 1.5rem;
+            text-align: center;
+        }
+        .footer-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 1.5rem; }
+        .footer-quote { font-size: 0.85rem; color: var(--muted); font-style: italic; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+        .footer-divider { width: 40px; height: 1px; background: rgba(220,38,38,0.3); margin: 1.25rem auto; }
+        .footer-credit { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.15); }
+
+        /* ── INITIAL GSAP STATES ── */
+        .reveal { opacity: 0; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col selection:bg-red-100 selection:text-red-900">
+<body>
 
-    <!-- Glassmorphism Header -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 py-5 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-xl shadow-sm border border-red-100">👽</div>
-                <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
-                    Jarvis <span class="font-light text-gray-400">here....at your service</span>
-                </h1>
-            </div>
-            <span class="text-xs font-bold bg-white text-red-600 px-3 py-1.5 rounded-full border border-red-200 shadow-sm flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
-                SEO Tools
-            </span>
+    <!-- ═══════════════════════════════════════════
+         NAVIGATION
+    ════════════════════════════════════════════ -->
+    <nav id="nav">
+        <a href="#" class="nav-logo">
+            <div class="nav-logo-icon">👽</div>
+            <span class="nav-logo-text">Jarvis <span>SEO</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#tool" class="nav-link">Tool</a>
+            <a href="#tool" class="nav-cta">Mulai Sekarang →</a>
         </div>
-    </header>
+    </nav>
 
-    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
-        <!-- Error/Message Alert Box -->
-        <div id="messageBox" class="hidden mb-8 p-4 rounded-xl border transform transition-all duration-300" role="alert">
-            <div class="flex items-center">
-                <svg id="messageIcon" class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                <span id="messageText" class="font-medium text-sm"></span>
+
+    <!-- ═══════════════════════════════════════════
+         HERO — WebGL Motion Header
+    ════════════════════════════════════════════ -->
+    <section id="hero">
+        <div id="hero-bg"></div>
+        <canvas id="webgl-canvas"></canvas>
+
+        <!-- ambient glow orbs -->
+        <div class="orb" style="width:500px;height:500px;background:rgba(124,58,237,0.12);top:-15%;left:5%;z-index:1;"></div>
+        <div class="orb" style="width:400px;height:400px;background:rgba(220,38,38,0.1);top:10%;right:-5%;z-index:1;"></div>
+        <div class="orb" style="width:300px;height:300px;background:rgba(220,38,38,0.07);bottom:5%;left:35%;z-index:1;"></div>
+
+        <div id="hero-fade"></div>
+
+        <div class="hero-content">
+            <div class="hero-badge reveal" id="hb">
+                <span class="badge-dot"></span>
+                AI-Powered SEO Studio
+            </div>
+
+            <h1 class="hero-title">
+                <span class="hero-title-line">
+                    <span class="hero-title-inner solid reveal" id="ht1">Konten</span>
+                </span>
+                <span class="hero-title-line">
+                    <span class="hero-title-inner grad reveal" id="ht2">Berkualitas</span>
+                </span>
+                <span class="hero-title-line">
+                    <span class="hero-title-inner solid reveal" id="ht3">Lebih Cepat.</span>
+                </span>
+            </h1>
+
+            <p class="hero-sub reveal" id="hs">
+                Jarvis membantu Anda membuat artikel SEO yang kuat dengan bantuan AI —
+                dari meta tag hingga konten lengkap, selesai dalam hitungan detik.
+            </p>
+
+            <div class="hero-cta-group reveal" id="hc">
+                <a href="#tool" class="btn-primary">
+                    Mulai Buat Konten
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+                <a href="#features" class="btn-ghost">Lihat Fitur</a>
             </div>
         </div>
 
-        <!-- Form Section -->
-        <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden mb-8 relative">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-            <div class="p-6 sm:p-10">
-                <div class="flex items-center mb-8">
-                    <div class="w-1.5 h-6 bg-red-600 rounded-full mr-3"></div>
-                    <h2 class="text-xl font-bold text-gray-900">Detail Artikel</h2>
+        <div class="hero-scroll">
+            <span class="scroll-text">Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         FEATURES
+    ════════════════════════════════════════════ -->
+    <section id="features">
+        <div class="orb" style="width:450px;height:450px;background:rgba(124,58,237,0.08);top:-5%;right:-10%;"></div>
+
+        <div class="section-inner">
+            <div class="section-header">
+                <div class="section-label reveal">Capabilities</div>
+                <h2 class="section-title reveal">Semua yang Anda Butuhkan</h2>
+                <p class="section-sub reveal">Satu platform untuk kebutuhan konten SEO Anda dari awal sampai selesai.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon red">🎯</div>
+                    <h3>Meta SEO Otomatis</h3>
+                    <p>Meta title dan description dioptimalkan untuk mesin pencari berdasarkan judul dan keyword Anda secara instan.</p>
+                    <div class="feature-link red">Pelajari lebih <span>→</span></div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
-                    <!-- Judul Article -->
-                    <div class="col-span-1 md:col-span-2">
-                        <label for="judul" class="block text-sm font-semibold text-gray-700 mb-2">Judul Artikel</label>
-                        <input type="text" id="judul" placeholder="Contoh: Cara Memulai Investasi Saham untuk Pemula" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300">
+
+                <div class="feature-card reveal" style="margin-top: 1.75rem;">
+                    <div class="feature-icon purple">✍️</div>
+                    <h3>Artikel AI Berkualitas</h3>
+                    <p>Buat artikel lengkap SEO-friendly dengan gaya bahasa yang disesuaikan untuk segmen audiens pilihan Anda.</p>
+                    <div class="feature-link purple">Pelajari lebih <span>→</span></div>
+                </div>
+
+                <div class="feature-card reveal">
+                    <div class="feature-icon orange">⚡</div>
+                    <h3>Generasi Kilat</h3>
+                    <p>Hemat waktu berjam-jam. Konten yang biasanya butuh waktu panjang kini selesai dalam hitungan detik.</p>
+                    <div class="feature-link orange">Pelajari lebih <span>→</span></div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item reveal">
+                    <div class="stat-num" data-target="5000" data-suffix="+">0</div>
+                    <div class="stat-label">Artikel Dibuat</div>
+                </div>
+                <div class="stat-item reveal">
+                    <div class="stat-num" data-target="98" data-suffix="%">0</div>
+                    <div class="stat-label">Tingkat Kepuasan</div>
+                </div>
+                <div class="stat-item reveal">
+                    <div class="stat-num" data-target="10" data-suffix="s">0</div>
+                    <div class="stat-label">Rata-rata Waktu</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         TOOL SECTION
+    ════════════════════════════════════════════ -->
+    <section id="tool">
+        <div class="orb" style="width:400px;height:400px;background:rgba(220,38,38,0.07);bottom:0;left:-8%;"></div>
+
+        <div class="tool-inner">
+            <div class="section-header">
+                <div class="section-label reveal">AI Studio</div>
+                <h2 class="section-title reveal">Mulai Buat Konten</h2>
+                <p class="section-sub reveal">Isi detail artikel Anda dan biarkan AI bekerja.</p>
+            </div>
+
+            <!-- Message Box -->
+            <div id="messageBox" class="msg-box hidden">
+                <svg id="msgIcon" width="18" height="18" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink:0">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <span id="messageText"></span>
+            </div>
+
+            <!-- Form Card -->
+            <div class="glass accent reveal" style="overflow:hidden;">
+                <div class="card-topline"></div>
+                <div style="padding: 2.25rem 2.5rem;">
+                    <div class="card-section-head">
+                        <div class="red-bar"></div>
+                        <span class="card-section-title">Detail Artikel</span>
                     </div>
 
-                    <!-- Segment -->
-                    <div class="col-span-1">
-                        <label for="segment" class="block text-sm font-semibold text-gray-700 mb-2">Segmen</label>
-                        <select id="segment" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 appearance-none" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
-                            <option value="" disabled selected>Pilih target audiens</option>
-                            <option value="Emerging Affluence">Emerging Affluence</option>
-                            <option value="Private Banking">Private Banking</option>
-                            <option value="Private">Private</option>
-                            <option value="Business">Business</option>
-                            <option value="Syariah">Syariah</option>
-                        </select>
-                    </div>
+                    <div class="form-grid">
+                        <div class="full">
+                            <label class="form-label">Judul Artikel</label>
+                            <input type="text" id="judul" class="dark-input" placeholder="Cara Memulai Investasi Saham untuk Pemula">
+                        </div>
 
-                    <!-- Gaya Bahasa -->
-                    <div class="col-span-1">
-                        <label for="gayaBahasa" class="block text-sm font-semibold text-gray-700 mb-2">Gaya Bahasa</label>
-                        <select id="gayaBahasa" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 appearance-none" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
-                            <option value="" disabled selected>Pilih gaya bahasa</option>
-                            <option value="Casual">Casual</option>
-                            <option value="Formal">Formal</option>
-                            <option value="Edukatif">Edukatif</option>
-                            <option value="Persuasif">Persuasif</option>
-                            <option value="Humor">Humor</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label class="form-label">Segmen Audiens</label>
+                            <select id="segment" class="dark-input">
+                                <option value="" disabled selected>Pilih target audiens</option>
+                                <option value="Emerging Affluence">Emerging Affluence</option>
+                                <option value="Private Banking">Private Banking</option>
+                                <option value="Private">Private</option>
+                                <option value="Business">Business</option>
+                                <option value="Syariah">Syariah</option>
+                            </select>
+                        </div>
 
-                    <!-- Keyword -->
-                    <div class="col-span-1 md:col-span-2">
-                        <label for="keyword" class="block text-sm font-semibold text-gray-700 mb-2">Keyword <span class="text-gray-400 font-normal">(Pisahkan dengan koma)</span></label>
-                        <input type="text" id="keyword" placeholder="Contoh: investasi saham, reksadana, pasar modal" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300">
-                    </div>
+                        <div>
+                            <label class="form-label">Gaya Bahasa</label>
+                            <select id="gayaBahasa" class="dark-input">
+                                <option value="" disabled selected>Pilih gaya bahasa</option>
+                                <option value="Casual">Casual</option>
+                                <option value="Formal">Formal</option>
+                                <option value="Edukatif">Edukatif</option>
+                                <option value="Persuasif">Persuasif</option>
+                                <option value="Humor">Humor</option>
+                            </select>
+                        </div>
 
-                    <!-- Panjang Artikel -->
-                    <div class="col-span-1 md:col-span-2 bg-gray-50/50 p-5 rounded-xl border border-gray-100">
-                        <div class="flex justify-between items-center mb-4">
-                            <label for="panjangArtikel" class="block text-sm font-semibold text-gray-700">Panjang Artikel</label>
-                            <div class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm flex items-center">
-                                <span id="panjangValue" class="text-sm font-bold text-red-600">1000</span>
-                                <span class="text-xs text-gray-500 ml-1">kata</span>
+                        <div class="full">
+                            <label class="form-label">Keyword <span style="color:rgba(255,255,255,0.2);font-weight:400;text-transform:none;letter-spacing:0">(pisahkan dengan koma)</span></label>
+                            <input type="text" id="keyword" class="dark-input" placeholder="investasi saham, reksadana, pasar modal">
+                        </div>
+
+                        <div class="full">
+                            <div class="range-track">
+                                <div class="range-header">
+                                    <label class="form-label" style="margin:0">Panjang Artikel</label>
+                                    <div class="range-val">
+                                        <span class="range-val-num" id="panjangValue">1000</span>
+                                        <span class="range-val-unit">kata</span>
+                                    </div>
+                                </div>
+                                <input type="range" id="panjangArtikel" min="100" max="2000" step="50" value="1000">
                             </div>
                         </div>
-                        <input type="range" id="panjangArtikel" min="100" max="2000" step="50" value="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600">
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; margin-top:2rem;">
+                        <button id="btnGenerateMeta" class="btn-submit">
+                            <span id="metaBtnText">Dapatkan Meta SEO</span>
+                            <div id="metaSpinner" class="spinner" style="display:none;"></div>
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Action: Generate Meta -->
-                <div class="mt-8 flex justify-end">
-                    <button id="btnGenerateMeta" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-[0_4px_14px_0_rgba(220,38,38,0.39)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.23)] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center min-w-[220px]">
-                        <span>Dapatkan Meta SEO</span>
-                        <svg id="metaSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+            <!-- Meta Result Card -->
+            <div id="metaSection" class="glass accent" style="overflow:hidden; margin-top:1.25rem; display:none; opacity:0; transform:translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease;">
+                <div class="card-topline"></div>
+                <div style="padding: 2.25rem 2.5rem;">
+                    <div class="card-section-head">
+                        <div class="red-bar"></div>
+                        <span class="card-section-title">Hasil Meta SEO</span>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                                <label class="form-label" style="margin:0">Meta Title</label>
+                                <span id="titleCounter" class="counter-badge">0/60</span>
+                            </div>
+                            <input type="text" id="metaTitle" class="dark-input">
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                                <label class="form-label" style="margin:0">Meta Description</label>
+                                <span id="descCounter" class="counter-badge">0/160</span>
+                            </div>
+                            <textarea id="metaDescription" rows="3" class="dark-input" style="resize:vertical; line-height:1.65;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button id="btnGenerateArticle" class="btn-submit" style="padding:1rem 2.5rem; font-size:1rem;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            <span id="articleBtnText">Buat Artikel</span>
+                            <div id="articleSpinner" class="spinner" style="display:none;"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article Result Card -->
+            <div id="articleSection" class="glass" style="overflow:hidden; margin-top:1.25rem; display:none; opacity:0; transform:translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; border-color: rgba(220,38,38,0.1);">
+                <div style="padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                    <div class="card-section-head" style="margin:0">
+                        <div class="red-bar" style="margin-right:10px;"></div>
+                        <span class="card-section-title">Hasil Artikel</span>
+                    </div>
+                    <button id="btnCopy" class="copy-btn">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        Copy Artikel
                     </button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Meta Section -->
-        <div id="metaSection" class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden mb-8 hidden opacity-0 translate-y-4 transition-all duration-500 relative">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-            <div class="p-6 sm:p-10">
-                <div class="flex items-center justify-between mb-8">
-                    <div class="flex items-center">
-                        <div class="w-1.5 h-6 bg-red-600 rounded-full mr-3"></div>
-                        <h2 class="text-xl font-bold text-gray-900">Hasil Meta SEO</h2>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <label for="metaTitle" class="block text-sm font-semibold text-gray-700">Meta Title</label>
-                            <span id="titleCounter" class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">0/60</span>
-                        </div>
-                        <input type="text" id="metaTitle" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 font-medium">
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <label for="metaDescription" class="block text-sm font-semibold text-gray-700">Meta Description</label>
-                            <span id="descCounter" class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">0/160</span>
-                        </div>
-                        <textarea id="metaDescription" rows="3" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all shadow-sm hover:border-gray-300 resize-y leading-relaxed"></textarea>
-                    </div>
-                </div>
-
-                <!-- Action: Generate Article -->
-                <div class="mt-10 pt-8 border-t border-gray-100 flex justify-end">
-                    <button id="btnGenerateArticle" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl shadow-[0_4px_14px_0_rgba(220,38,38,0.39)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.23)] transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center min-w-[240px] text-lg group">
-                        <svg class="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        <span>Buat Artikel</span>
-                        <svg id="articleSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </button>
+                <div style="padding: 2rem 2.5rem;">
+                    <div id="articleContent" class="article-content"></div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- Article Section -->
-        <div id="articleSection" class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden hidden opacity-0 translate-y-4 transition-all duration-500 relative">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-            <div class="p-6 sm:p-10 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                <div class="flex items-center">
-                    <div class="w-1.5 h-6 bg-red-600 rounded-full mr-3"></div>
-                    <h2 class="text-xl font-bold text-gray-900">Hasil Artikel</h2>
-                </div>
-                <button id="btnCopy" class="text-gray-600 hover:text-red-600 transition-all flex items-center text-sm font-semibold px-4 py-2 border border-gray-200 rounded-lg hover:border-red-200 hover:bg-red-50 bg-white shadow-sm">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    Copy Artikel
-                </button>
-            </div>
-            <div class="p-6 sm:p-12">
-                <div id="articleContent" class="article-content">
-                    <!-- Generated content will be injected here -->
-                </div>
-            </div>
+
+    <!-- ═══════════════════════════════════════════
+         FOOTER
+    ════════════════════════════════════════════ -->
+    <footer>
+        <div class="footer-logo">
+            <div class="nav-logo-icon" style="width:32px;height:32px;font-size:1rem;">👽</div>
+            <span style="font-weight:700; color:white; font-size:0.95rem;">Jarvis SEO</span>
         </div>
-
-    </main>
-
-    <footer class="bg-white border-t border-gray-100 mt-auto py-8">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center gap-4">
-            <p class="text-sm text-gray-500 font-medium leading-relaxed max-w-2xl">
-                <span class="italic text-gray-400">"Walau sudah tak di sini, biarkan hati saya tetap bersama kalian. Rawat kontennya, jaga kualitasnya. Terus tumbuh bersama OCBC karena Tidak Ada Yang Tidak Bisa! ~ Jarvis 2026"</span>
-            </p>
-            <div class="h-px w-12 bg-gray-200 my-1"></div>
-            <p class="text-xs font-bold text-gray-800 uppercase tracking-widest">
-                Powered by <span class="text-red-500 text-base align-middle mx-1">💖</span> to Marcopolo Team
-            </p>
-        </div>
+        <p class="footer-quote">
+            "Walau sudah tak di sini, biarkan hati saya tetap bersama kalian.
+            Rawat kontennya, jaga kualitasnya. Terus tumbuh bersama OCBC
+            karena Tidak Ada Yang Tidak Bisa! ~ Jarvis 2026"
+        </p>
+        <div class="footer-divider"></div>
+        <p class="footer-credit">Powered by ❤️ to Marcopolo Team</p>
     </footer>
 
+
+    <!-- ═══════════════════════════════════════════
+         SCRIPTS
+    ════════════════════════════════════════════ -->
     <script>
-        // API Configuration
-        const API_KEY = ""; // Provided automatically by environment
-        const MODEL_NAME = "gemini-3-flash-preview";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+    // ────────────────────────────────────────────
+    //  THREE.JS  —  WebGL Motion Header
+    // ────────────────────────────────────────────
+    (function() {
+        const canvas  = document.getElementById('webgl-canvas');
+        const heroEl  = document.getElementById('hero');
+        const scene   = new THREE.Scene();
 
-        // DOM Elements
-        const elSlider = document.getElementById('panjangArtikel');
-        const elSliderValue = document.getElementById('panjangValue');
-        
-        const inJudul = document.getElementById('judul');
-        const inSegment = document.getElementById('segment');
-        const inGaya = document.getElementById('gayaBahasa');
-        const inKeyword = document.getElementById('keyword');
-        
-        const btnGenMeta = document.getElementById('btnGenerateMeta');
-        const metaSpinner = document.getElementById('metaSpinner');
-        
-        const secMeta = document.getElementById('metaSection');
-        const inMetaTitle = document.getElementById('metaTitle');
-        const inMetaDesc = document.getElementById('metaDescription');
-        const countTitle = document.getElementById('titleCounter');
-        const countDesc = document.getElementById('descCounter');
-        
-        const btnGenArticle = document.getElementById('btnGenerateArticle');
-        const articleSpinner = document.getElementById('articleSpinner');
-        
-        const secArticle = document.getElementById('articleSection');
-        const outArticle = document.getElementById('articleContent');
-        const btnCopy = document.getElementById('btnCopy');
+        const W = () => heroEl.offsetWidth;
+        const H = () => heroEl.offsetHeight;
 
-        const msgBox = document.getElementById('messageBox');
-        const msgText = document.getElementById('messageText');
+        const camera = new THREE.PerspectiveCamera(65, W() / H(), 0.1, 2000);
+        camera.position.z = 280;
 
-        // Update slider value display
-        elSlider.addEventListener('input', (e) => {
-            elSliderValue.textContent = `${e.target.value}`;
-        });
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setSize(W(), H());
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x000000, 0);
 
-        // Update character counters for Meta fields
-        inMetaTitle.addEventListener('input', (e) => {
-            const len = e.target.value.length;
-            countTitle.textContent = `${len}/60`;
-            countTitle.className = len > 60 ? 'text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded' : 'text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded';
-        });
+        // ── Particle layer 1: flowing field ──
+        const COUNT1 = 5500;
+        const geo1 = new THREE.BufferGeometry();
+        const pos1 = new Float32Array(COUNT1 * 3);
+        const col1 = new Float32Array(COUNT1 * 3);
+        const sz1  = new Float32Array(COUNT1);
 
-        inMetaDesc.addEventListener('input', (e) => {
-            const len = e.target.value.length;
-            countDesc.textContent = `${len}/160`;
-            countDesc.className = len > 160 ? 'text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded' : 'text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded';
-        });
+        const palette = [
+            [0.86, 0.15, 0.15],  // red
+            [0.73, 0.11, 0.11],  // dark red
+            [0.49, 0.23, 0.93],  // purple
+            [0.43, 0.17, 0.86],  // dark purple
+            [1.00, 1.00, 1.00],  // white
+            [0.98, 0.45, 0.09],  // orange
+        ];
 
-        // Helper to show messages
-        function showMessage(msg, type = 'error') {
-            msgText.textContent = msg;
-            msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-800', 'border-red-200', 'bg-green-50', 'text-green-800', 'border-green-200');
-            
-            if (type === 'error') {
-                msgBox.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
-            } else {
-                msgBox.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
-            }
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Auto hide success messages after 3s
-            if(type === 'success') {
-                setTimeout(() => {
-                    msgBox.classList.add('hidden');
-                }, 4000);
-            }
+        for (let i = 0; i < COUNT1; i++) {
+            const i3 = i * 3;
+            pos1[i3]     = (Math.random() - 0.5) * 900;
+            pos1[i3 + 1] = (Math.random() - 0.5) * 450;
+            pos1[i3 + 2] = (Math.random() - 0.5) * 500 - 50;
+            const c = palette[Math.floor(Math.random() * palette.length)];
+            col1[i3] = c[0]; col1[i3+1] = c[1]; col1[i3+2] = c[2];
+            sz1[i] = Math.random() * 3.5 + 0.4;
         }
 
-        // Helper to validate inputs
-        function validateInputs() {
-            if (!inJudul.value.trim()) return "Silakan isi Judul Artikel.";
-            if (!inSegment.value) return "Silakan pilih Segment audiens.";
-            if (!inGaya.value) return "Silakan pilih Gaya Bahasa.";
-            if (!inKeyword.value.trim()) return "Silakan masukkan Keyword.";
-            return null;
+        geo1.setAttribute('position', new THREE.BufferAttribute(pos1, 3));
+        geo1.setAttribute('color',    new THREE.BufferAttribute(col1, 3));
+        geo1.setAttribute('pSize',    new THREE.BufferAttribute(sz1,  1));
+
+        const mat1 = new THREE.ShaderMaterial({
+            vertexShader: `
+                attribute float pSize;
+                attribute vec3 color;
+                varying vec3  vColor;
+                varying float vFade;
+                uniform float uTime;
+                uniform vec2  uMouse;
+
+                void main() {
+                    vColor = color;
+                    vec3 p = position;
+
+                    // multi-frequency wave
+                    float wave = sin(p.x * 0.008 + uTime * 0.55) * 22.0
+                               + cos(p.z * 0.007 + uTime * 0.40) * 16.0
+                               + sin(p.y * 0.010 + uTime * 0.30) *  9.0;
+                    p.y += wave;
+
+                    // slow global drift
+                    float drift = uTime * 0.04;
+                    float ca = cos(drift), sa = sin(drift);
+                    float nx = p.x * ca - p.z * sa;
+                    float nz = p.x * sa + p.z * ca;
+                    p.x = nx; p.z = nz;
+
+                    // mouse parallax
+                    p.x += uMouse.x * 45.0;
+                    p.y += uMouse.y * 28.0;
+
+                    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+                    gl_PointSize = pSize * (220.0 / -mv.z);
+                    gl_Position  = projectionMatrix * mv;
+
+                    vFade = clamp(1.0 - (-mv.z - 80.0) / 500.0, 0.05, 0.95);
+                }
+            `,
+            fragmentShader: `
+                varying vec3  vColor;
+                varying float vFade;
+
+                void main() {
+                    vec2  uv   = gl_PointCoord - 0.5;
+                    float dist = length(uv);
+                    if (dist > 0.5) discard;
+
+                    float core = 1.0 - smoothstep(0.0, 0.18, dist);
+                    float halo = 1.0 - smoothstep(0.0, 0.50, dist);
+                    float a    = core * 0.9 + halo * 0.35;
+
+                    vec3 glow = vColor + vec3(0.15, 0.05, 0.05) * core;
+                    gl_FragColor = vec4(glow, a * vFade * 0.85);
+                }
+            `,
+            uniforms: {
+                uTime:  { value: 0.0 },
+                uMouse: { value: new THREE.Vector2(0, 0) },
+            },
+            transparent: true,
+            blending:    THREE.AdditiveBlending,
+            depthWrite:  false,
+        });
+
+        const pts1 = new THREE.Points(geo1, mat1);
+        scene.add(pts1);
+
+        // ── Particle layer 2: large glowing orbs ──
+        const COUNT2 = 80;
+        const geo2 = new THREE.BufferGeometry();
+        const pos2 = new Float32Array(COUNT2 * 3);
+        const col2 = new Float32Array(COUNT2 * 3);
+        const sz2  = new Float32Array(COUNT2);
+
+        const bigPalette = [[0.86,0.15,0.15],[0.49,0.23,0.93],[0.98,0.45,0.09]];
+        for (let i = 0; i < COUNT2; i++) {
+            const i3 = i * 3;
+            pos2[i3]     = (Math.random() - 0.5) * 700;
+            pos2[i3 + 1] = (Math.random() - 0.5) * 340;
+            pos2[i3 + 2] = (Math.random() - 0.5) * 300 + 20;
+            const c = bigPalette[Math.floor(Math.random() * bigPalette.length)];
+            col2[i3] = c[0]; col2[i3+1] = c[1]; col2[i3+2] = c[2];
+            sz2[i] = Math.random() * 18 + 8;
         }
 
-        btnGenMeta.addEventListener('click', async () => {
-            msgBox.classList.add('hidden');
-            const error = validateInputs();
-            if (error) {
-                showMessage(error, 'error');
-                return;
+        geo2.setAttribute('position', new THREE.BufferAttribute(pos2, 3));
+        geo2.setAttribute('color',    new THREE.BufferAttribute(col2, 3));
+        geo2.setAttribute('pSize',    new THREE.BufferAttribute(sz2,  1));
+
+        const mat2 = new THREE.ShaderMaterial({
+            vertexShader: `
+                attribute float pSize;
+                attribute vec3  color;
+                varying vec3  vColor;
+                uniform float uTime;
+                uniform vec2  uMouse;
+
+                void main() {
+                    vColor = color;
+                    vec3 p = position;
+                    float id = float(gl_VertexID);
+                    p.y += sin(uTime * 0.3 + id * 1.37) * 15.0;
+                    p.x += cos(uTime * 0.22 + id * 0.87) * 10.0;
+                    p.x += uMouse.x * 25.0;
+                    p.y += uMouse.y * 16.0;
+                    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+                    gl_PointSize = pSize * (180.0 / -mv.z);
+                    gl_Position  = projectionMatrix * mv;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                void main() {
+                    float dist = length(gl_PointCoord - 0.5);
+                    if (dist > 0.5) discard;
+                    float a = 1.0 - smoothstep(0.1, 0.5, dist);
+                    a = pow(a, 2.8) * 0.45;
+                    gl_FragColor = vec4(vColor, a);
+                }
+            `,
+            uniforms: {
+                uTime:  { value: 0 },
+                uMouse: { value: new THREE.Vector2(0, 0) },
+            },
+            transparent: true,
+            blending:    THREE.AdditiveBlending,
+            depthWrite:  false,
+        });
+
+        const pts2 = new THREE.Points(geo2, mat2);
+        scene.add(pts2);
+
+        // ── Mouse tracking ──
+        const mouse  = new THREE.Vector2();
+        const target = new THREE.Vector2();
+        window.addEventListener('mousemove', e => {
+            target.x =  (e.clientX / window.innerWidth  - 0.5) * 2;
+            target.y = -(e.clientY / window.innerHeight - 0.5) * 2;
+        });
+
+        // ── Resize ──
+        window.addEventListener('resize', () => {
+            camera.aspect = W() / H();
+            camera.updateProjectionMatrix();
+            renderer.setSize(W(), H());
+        });
+
+        // ── Scroll-based depth push ──
+        window.scrollDepth = 0;
+        window.addEventListener('scroll', () => {
+            window.scrollDepth = window.scrollY / (heroEl.offsetHeight || 1);
+        });
+
+        // ── Render loop ──
+        const clock = new THREE.Clock();
+        function loop() {
+            requestAnimationFrame(loop);
+            const t = clock.getElapsedTime();
+
+            mouse.x += (target.x - mouse.x) * 0.055;
+            mouse.y += (target.y - mouse.y) * 0.055;
+
+            mat1.uniforms.uTime.value  = t;
+            mat1.uniforms.uMouse.value.set(mouse.x, mouse.y);
+            mat2.uniforms.uTime.value  = t;
+            mat2.uniforms.uMouse.value.set(mouse.x, mouse.y);
+
+            camera.position.x = Math.sin(t * 0.09) * 18;
+            camera.position.y = Math.cos(t * 0.07) * 12;
+            camera.position.z = 280 + window.scrollDepth * 120;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+        loop();
+    })();
+
+
+    // ────────────────────────────────────────────
+    //  GSAP  —  Animations & ScrollTrigger
+    // ────────────────────────────────────────────
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Nav scroll effect
+    ScrollTrigger.create({
+        start: 'top -60',
+        onEnter:     () => document.getElementById('nav').classList.add('scrolled'),
+        onLeaveBack: () => document.getElementById('nav').classList.remove('scrolled'),
+    });
+
+    // Hero entrance (staggered slide + fade)
+    const heroTL = gsap.timeline({ delay: 0.2 });
+    heroTL
+        .fromTo('#hb',  { opacity:0, y:24, scale:0.92 }, { opacity:1, y:0, scale:1, duration:0.75, ease:'power3.out' })
+        .fromTo('#ht1', { opacity:0, y:70, skewY:4 },   { opacity:1, y:0, skewY:0, duration:0.85, ease:'power4.out' }, '-=0.45')
+        .fromTo('#ht2', { opacity:0, y:70, skewY:4 },   { opacity:1, y:0, skewY:0, duration:0.85, ease:'power4.out' }, '-=0.7')
+        .fromTo('#ht3', { opacity:0, y:70, skewY:4 },   { opacity:1, y:0, skewY:0, duration:0.85, ease:'power4.out' }, '-=0.7')
+        .fromTo('#hs',  { opacity:0, y:28 },            { opacity:1, y:0, duration:0.75, ease:'power3.out' }, '-=0.5')
+        .fromTo('#hc',  { opacity:0, y:20 },            { opacity:1, y:0, duration:0.65, ease:'power3.out' }, '-=0.45');
+
+    // Generic scroll-reveal for all .reveal elements
+    gsap.utils.toArray('.reveal').forEach((el, i) => {
+        // Skip hero elements (already animated above)
+        if (['hb','ht1','ht2','ht3','hs','hc'].includes(el.id)) return;
+
+        gsap.fromTo(el,
+            { opacity: 0, y: 48 },
+            {
+                opacity: 1, y: 0,
+                duration: 0.8,
+                ease: 'power3.out',
+                scrollTrigger: {
+                    trigger: el,
+                    start: 'top 86%',
+                    toggleActions: 'play none none reverse',
+                }
             }
+        );
+    });
 
-            btnGenMeta.disabled = true;
-            btnGenMeta.classList.add('opacity-75', 'cursor-not-allowed');
-            metaSpinner.classList.remove('hidden');
+    // Feature cards stagger
+    gsap.utils.toArray('.feature-card').forEach((card, i) => {
+        gsap.fromTo(card,
+            { opacity:0, y:55, rotateX:6 },
+            {
+                opacity:1, y:0, rotateX:0,
+                duration: 0.9, delay: i * 0.12,
+                ease: 'power4.out',
+                scrollTrigger: { trigger: card, start: 'top 88%' }
+            }
+        );
+    });
 
-            const prompt = `Anda adalah pakar SEO Spesialis Finansial. Buatkan Meta Title (maksimal 60 karakter) dan Meta Description (maksimal 160 karakter) yang sangat mengundang klik (CTR tinggi) berdasarkan data berikut:
+    // Animated stat counters
+    gsap.utils.toArray('.stat-num').forEach(el => {
+        const target = parseInt(el.dataset.target, 10);
+        const suffix = el.dataset.suffix || '';
+        ScrollTrigger.create({
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+            onEnter() {
+                gsap.fromTo({ v: 0 }, { v: target }, {
+                    duration: 2.2, ease: 'power2.out',
+                    onUpdate() {
+                        el.textContent = Math.round(this.targets()[0].v).toLocaleString() + suffix;
+                    }
+                });
+            }
+        });
+    });
+
+
+    // ────────────────────────────────────────────
+    //  SEO TOOL  —  Original Logic (Preserved)
+    // ────────────────────────────────────────────
+    const API_KEY   = "";
+    const MODEL     = "gemini-3-flash-preview";
+    const API_URL   = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+
+    const elSlider      = document.getElementById('panjangArtikel');
+    const elSliderVal   = document.getElementById('panjangValue');
+    const inJudul       = document.getElementById('judul');
+    const inSegment     = document.getElementById('segment');
+    const inGaya        = document.getElementById('gayaBahasa');
+    const inKeyword     = document.getElementById('keyword');
+    const btnGenMeta    = document.getElementById('btnGenerateMeta');
+    const metaBtnText   = document.getElementById('metaBtnText');
+    const metaSpinner   = document.getElementById('metaSpinner');
+    const secMeta       = document.getElementById('metaSection');
+    const inMetaTitle   = document.getElementById('metaTitle');
+    const inMetaDesc    = document.getElementById('metaDescription');
+    const titleCounter  = document.getElementById('titleCounter');
+    const descCounter   = document.getElementById('descCounter');
+    const btnGenArt     = document.getElementById('btnGenerateArticle');
+    const articleBtnTxt = document.getElementById('articleBtnText');
+    const articleSpin   = document.getElementById('articleSpinner');
+    const secArticle    = document.getElementById('articleSection');
+    const outArticle    = document.getElementById('articleContent');
+    const btnCopy       = document.getElementById('btnCopy');
+    const msgBox        = document.getElementById('messageBox');
+    const msgText       = document.getElementById('messageText');
+
+    elSlider.addEventListener('input', e => {
+        elSliderVal.textContent = e.target.value;
+    });
+
+    inMetaTitle.addEventListener('input', e => {
+        const len = e.target.value.length;
+        titleCounter.textContent = `${len}/60`;
+        titleCounter.className = 'counter-badge' + (len > 60 ? ' over' : '');
+    });
+
+    inMetaDesc.addEventListener('input', e => {
+        const len = e.target.value.length;
+        descCounter.textContent = `${len}/160`;
+        descCounter.className = 'counter-badge' + (len > 160 ? ' over' : '');
+    });
+
+    function showMsg(msg, type = 'error') {
+        msgText.textContent = msg;
+        msgBox.className = `msg-box ${type}`;
+        if (type === 'success') setTimeout(() => { msgBox.className = 'msg-box hidden'; }, 4000);
+    }
+
+    function hideMsg() { msgBox.className = 'msg-box hidden'; }
+
+    function validate() {
+        if (!inJudul.value.trim())    return "Silakan isi Judul Artikel.";
+        if (!inSegment.value)         return "Silakan pilih Segment audiens.";
+        if (!inGaya.value)            return "Silakan pilih Gaya Bahasa.";
+        if (!inKeyword.value.trim())  return "Silakan masukkan Keyword.";
+        return null;
+    }
+
+    function reveal(el) {
+        el.style.display = 'block';
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                el.style.opacity   = '1';
+                el.style.transform = 'translateY(0)';
+            });
+        });
+    }
+
+    btnGenMeta.addEventListener('click', async () => {
+        hideMsg();
+        const err = validate();
+        if (err) { showMsg(err, 'error'); return; }
+
+        btnGenMeta.disabled = true;
+        metaBtnText.textContent = 'Memproses...';
+        metaSpinner.style.display = 'block';
+
+        const prompt = `Anda adalah pakar SEO Spesialis Finansial. Buatkan Meta Title (maksimal 60 karakter) dan Meta Description (maksimal 160 karakter) yang sangat mengundang klik (CTR tinggi) berdasarkan data berikut:
 - Judul Artikel: ${inJudul.value}
 - Segment Pembaca: ${inSegment.value}
 - Gaya Bahasa: ${inGaya.value}
 - Target Keyword: ${inKeyword.value}`;
 
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            meta_title: { type: "STRING" },
-                            meta_description: { type: "STRING" }
-                        },
-                        required: ["meta_title", "meta_description"]
-                    }
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "OBJECT",
+                    properties: {
+                        meta_title:       { type: "STRING" },
+                        meta_description: { type: "STRING" }
+                    },
+                    required: ["meta_title", "meta_description"]
                 }
-            };
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error("Gagal menghubungi server AI. Silakan coba lagi.");
-
-                const data = await response.json();
-                
-                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-                    const resultJson = JSON.parse(data.candidates[0].content.parts[0].text);
-                    
-                    inMetaTitle.value = resultJson.meta_title;
-                    inMetaDesc.value = resultJson.meta_description;
-                    
-                    inMetaTitle.dispatchEvent(new Event('input'));
-                    inMetaDesc.dispatchEvent(new Event('input'));
-
-                    secMeta.classList.remove('hidden');
-                    setTimeout(() => {
-                        secMeta.classList.remove('opacity-0', 'translate-y-4');
-                        secMeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 50);
-
-                    showMessage("Meta SEO berhasil dibuat! Silakan review dan edit jika diperlukan.", "success");
-                } else {
-                    throw new Error("Format respons dari AI tidak sesuai.");
-                }
-
-            } catch (err) {
-                showMessage(err.message, 'error');
-            } finally {
-                btnGenMeta.disabled = false;
-                btnGenMeta.classList.remove('opacity-75', 'cursor-not-allowed');
-                metaSpinner.classList.add('hidden');
             }
-        });
+        };
 
-        btnGenArticle.addEventListener('click', async () => {
-            msgBox.classList.add('hidden');
-            
-            if (!inMetaTitle.value.trim() || !inMetaDesc.value.trim()) {
-                showMessage("Meta Title dan Description tidak boleh kosong.", "error");
-                return;
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error("Gagal menghubungi server AI. Silakan coba lagi.");
+
+            const data = await res.json();
+            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                const r = JSON.parse(data.candidates[0].content.parts[0].text);
+                inMetaTitle.value = r.meta_title;
+                inMetaDesc.value  = r.meta_description;
+                inMetaTitle.dispatchEvent(new Event('input'));
+                inMetaDesc.dispatchEvent(new Event('input'));
+
+                reveal(secMeta);
+                setTimeout(() => secMeta.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+                showMsg("Meta SEO berhasil dibuat! Silakan review dan edit jika diperlukan.", "success");
+            } else {
+                throw new Error("Format respons dari AI tidak sesuai.");
             }
+        } catch (e) {
+            showMsg(e.message, 'error');
+        } finally {
+            btnGenMeta.disabled = false;
+            metaBtnText.textContent = 'Dapatkan Meta SEO';
+            metaSpinner.style.display = 'none';
+        }
+    });
 
-            btnGenArticle.disabled = true;
-            btnGenArticle.classList.add('opacity-75', 'cursor-not-allowed');
-            articleSpinner.classList.remove('hidden');
-            btnGenArticle.querySelector('span').textContent = "Sedang Menulis...";
+    btnGenArt.addEventListener('click', async () => {
+        hideMsg();
+        if (!inMetaTitle.value.trim() || !inMetaDesc.value.trim()) {
+            showMsg("Meta Title dan Description tidak boleh kosong.", "error");
+            return;
+        }
 
-            const prompt = `Anda adalah penulis konten edukasi finansial profesional dan pakar SEO.
+        btnGenArt.disabled = true;
+        articleBtnTxt.textContent = 'Sedang Menulis...';
+        articleSpin.style.display = 'block';
+
+        const prompt = `Anda adalah penulis konten edukasi finansial profesional dan pakar SEO.
 Tugas Anda adalah menulis artikel edukasi finansial berdasarkan parameter berikut:
 - Topik / Judul: ${inJudul.value}
 - Segment Pembaca: ${inSegment.value}
@@ -413,72 +1165,49 @@ Instruksi Penulisan:
 4. Pastikan kata kunci dimasukkan secara natural, jangan memaksakan (keyword stuffing).
 5. Berikan insight finansial yang akurat dan bernilai bagi segmen ${inSegment.value}.
 6. Berikan kesimpulan dan call-to-action (CTA) ringan di akhir artikel.
-7. Jangan tambahkan komentar di luar isi artikel (seperti "Ini artikel Anda..."). Langsung output teks artikelnya saja.`;
+7. Jangan tambahkan komentar di luar isi artikel. Langsung output teks artikelnya saja.`;
 
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-            };
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            if (!res.ok) throw new Error("Gagal mengenerate artikel. Silakan coba lagi.");
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error("Gagal mengenerate artikel. Silakan coba lagi.");
-
-                const data = await response.json();
-                
-                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-                    const markdownText = data.candidates[0].content.parts[0].text;
-                    const htmlContent = marked.parse(markdownText);
-                    outArticle.innerHTML = htmlContent;
-
-                    secArticle.classList.remove('hidden');
-                    setTimeout(() => {
-                        secArticle.classList.remove('opacity-0', 'translate-y-4');
-                        secArticle.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 50);
-
-                    showMessage("Artikel berhasil dibuat!", "success");
-                } else {
-                    throw new Error("Gagal mengekstrak teks artikel dari respons AI.");
-                }
-
-            } catch (err) {
-                showMessage(err.message, 'error');
-            } finally {
-                btnGenArticle.disabled = false;
-                btnGenArticle.classList.remove('opacity-75', 'cursor-not-allowed');
-                articleSpinner.classList.add('hidden');
-                btnGenArticle.querySelector('span').textContent = "Buat Artikel";
+            const data = await res.json();
+            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                outArticle.innerHTML = marked.parse(data.candidates[0].content.parts[0].text);
+                reveal(secArticle);
+                setTimeout(() => secArticle.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+                showMsg("Artikel berhasil dibuat!", "success");
+            } else {
+                throw new Error("Gagal mengekstrak teks artikel dari respons AI.");
             }
-        });
+        } catch (e) {
+            showMsg(e.message, 'error');
+        } finally {
+            btnGenArt.disabled = false;
+            articleBtnTxt.textContent = 'Buat Artikel';
+            articleSpin.style.display = 'none';
+        }
+    });
 
-        btnCopy.addEventListener('click', () => {
-            const range = document.createRange();
-            range.selectNode(outArticle);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-            
-            try {
-                document.execCommand('copy');
-                
-                const originalContent = btnCopy.innerHTML;
-                btnCopy.innerHTML = `<svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="text-green-600">Berhasil Disalin!</span>`;
-                btnCopy.classList.add('border-green-600', 'bg-green-50');
-                
-                setTimeout(() => {
-                    btnCopy.innerHTML = originalContent;
-                    btnCopy.classList.remove('border-green-600', 'bg-green-50');
-                }, 2000);
-            } catch(err) {
-                showMessage("Gagal menyalin teks. Silakan blok dan salin secara manual.", "error");
-            }
-            window.getSelection().removeAllRanges();
-        });
-
+    btnCopy.addEventListener('click', () => {
+        const range = document.createRange();
+        range.selectNode(outArticle);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        try {
+            document.execCommand('copy');
+            const orig = btnCopy.innerHTML;
+            btnCopy.innerHTML = `<svg width="14" height="14" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span style="color:#4ade80">Tersalin!</span>`;
+            setTimeout(() => { btnCopy.innerHTML = orig; }, 2200);
+        } catch {
+            showMsg("Gagal menyalin. Silakan blok dan salin secara manual.", "error");
+        }
+        window.getSelection().removeAllRanges();
+    });
     </script>
 </body>
 </html>
