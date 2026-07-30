@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VELORA - Luxury Car Rental Hero</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
+        body {
+            font-family: 'Archivo', sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            min-height: 720px;
+            overflow: hidden;
+            background: #0a0a0b;
+        }
+
+        /* Background Video */
+        .hero-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 60%;
+            pointer-events: none;
+        }
+
+        /* Gradient Overlay */
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(8, 8, 10, 0.55) 0%,
+                rgba(8, 8, 10, 0.15) 30%,
+                rgba(8, 8, 10, 0.25) 55%,
+                rgba(8, 8, 10, 0.92) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 34px 56px;
+            width: 100%;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 42px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 42px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.82);
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        .nav-links a.active {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 3px;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.04em;
+        }
+
+        .browse-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #FAF9F5;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 11px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .browse-btn:hover {
+            background: #e9e9ec;
+            color: #0a0a0b;
+        }
+
+        .browse-btn-arrow {
+            font-size: 15px;
+        }
+
+        /* Giant Headline */
+        .headline {
+            position: absolute;
+            top: 92px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 13.3vw;
+            font-weight: 800;
+            line-height: 0.9;
+            letter-spacing: -0.03em;
+            background: linear-gradient(180deg, #ffffff 55%, #b8b8bd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Bottom Left Copy */
+        .hero-copy {
+            position: absolute;
+            left: 56px;
+            bottom: 56px;
+            z-index: 3;
+            max-width: 620px;
+        }
+
+        .hero-heading {
+            color: #fff;
+            font-weight: 600;
+            font-size: clamp(38px, 5.8vw, 66px);
+            line-height: 0.98;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-description {
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.5;
+            max-width: 480px;
+            margin-top: 18px;
+        }
+
+        .discover-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(6px);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            padding: 13px 24px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            margin-top: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .discover-btn:hover {
+            background: #fff;
+            color: #0a0a0b;
+            border-color: #fff;
+        }
+
+        .discover-arrow {
+            font-size: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .navbar {
+                padding: 24px 40px;
+            }
+
+            .nav-left {
+                gap: 30px;
+            }
+
+            .nav-links {
+                gap: 30px;
+            }
+
+            .nav-links a {
+                font-size: 13px;
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+
+            .browse-btn {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+
+            .hero-copy {
+                left: 40px;
+                bottom: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px 24px;
+            }
+
+            .nav-left {
+                width: 100%;
+                justify-content: space-between;
+                flex-direction: row-reverse;
+                gap: 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 12px;
+                font-size: 12px;
+            }
+
+            .logo {
+                font-size: 18px;
+            }
+
+            .browse-btn {
+                font-size: 12px;
+                padding: 9px 14px;
+            }
+
+            .headline {
+                font-size: 11vw;
+            }
+
+            .hero-copy {
+                left: 24px;
+                bottom: 24px;
+                max-width: 100%;
+            }
+
+            .hero-heading {
+                font-size: clamp(28px, 5vw, 48px);
+            }
+
+            .hero-description {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 16px 16px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .nav-left {
+                width: 100%;
+            }
+
+            .logo {
+                font-size: 16px;
+            }
+
+            .headline {
+                font-size: 10vw;
+                top: 80px;
+            }
+
+            .hero-copy {
+                left: 16px;
+                bottom: 16px;
+                max-width: calc(100% - 32px);
+            }
+
+            .hero-heading {
+                font-size: clamp(24px, 4.5vw, 40px);
+            }
+
+            .hero-description {
+                font-size: 13px;
+            }
+
+            .discover-btn {
+                font-size: 13px;
+                padding: 11px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <!-- Background Video -->
+        <video class="hero-video" autoplay muted loop playsinline preload="auto"></video>
+
+        <!-- Gradient Overlay -->
+        <div class="hero-overlay"></div>
+
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-left">
+                <ul class="nav-links">
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Cars</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+                <div class="logo">VELORA</div>
+            </div>
+            <button class="browse-btn">
+                <span>Browse cars</span>
+                <span class="browse-arrow">→</span>
+            </button>
+        </nav>
+
+        <!-- Giant Headline -->
+        <h1 class="headline">REGAL DRIVE</h1>
+
+        <!-- Bottom Left Copy -->
+        <div class="hero-copy">
+            <h2 class="hero-heading">Rent Your Dream Luxury Car Today</h2>
+            <p class="hero-description">
+                Enjoy a premium rental experience with exclusive cars, seamless booking, and honest pricing.
+            </p>
+            <button class="discover-btn">
+                <span>DISCOVER NOW</span>
+                <span class="discover-arrow">↗</span>
+            </button>
+        </div>
+    </section>
+
+    <script>
+        const videoElement = document.querySelector('.hero-video');
+        const videoUrl = 'https://cdn.sceneai.art/Hero section video file (2)/37091057-3719-4207-815c-745ebf57aeb4.mp4';
+
+        // Set video source
+        videoElement.src = videoUrl;
+
+        // Video playback enforcement
+        let playbackInterval;
+
+        function ensureVideoPlaying() {
+            if (videoElement.paused) {
+                const playPromise = videoElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        // Swallow rejection
+                    });
+                }
+            }
+        }
+
+        function initVideoPlayback() {
+            // Initial play
+            ensureVideoPlaying();
+
+            // Re-trigger play on specific events
+            videoElement.addEventListener('pause', ensureVideoPlaying);
+            videoElement.addEventListener('ended', ensureVideoPlaying);
+            videoElement.addEventListener('loadedmetadata', ensureVideoPlaying);
+            videoElement.addEventListener('canplay', ensureVideoPlaying);
+
+            // Re-trigger play on visibility change (tab re-focus)
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    ensureVideoPlaying();
+                }
+            });
+
+            // Watchdog interval - re-call play() every 1 second
+            playbackInterval = setInterval(() => {
+                ensureVideoPlaying();
+            }, 1000);
+        }
+
+        // Start playback on mount
+        if (videoElement.readyState >= 1) {
+            initVideoPlayback();
+        } else {
+            videoElement.addEventListener('loadedmetadata', initVideoPlayback, { once: true });
+        }
+
+        // Cleanup on unmount
+        window.addEventListener('beforeunload', () => {
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+            }
+        });
+
+        // Browse button interaction
+        document.querySelector('.browse-btn').addEventListener('click', () => {
+            alert('Browse cars functionality - add your navigation here');
+        });
+
+        // Discover button interaction
+        document.querySelector('.discover-btn').addEventListener('click', () => {
+            alert('Discover now functionality - add your action here');
+        });
+    </script>
+
+</body>
+</html>
