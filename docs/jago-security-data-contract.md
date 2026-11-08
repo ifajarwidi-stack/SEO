@@ -45,6 +45,7 @@ Nama: `security-daily.json`. Skema formal: `docs/schema/security-daily.schema.js
 |---|---|
 | `schema_version` | Naik hanya jika bentuk file berubah tidak kompatibel. Dashboard menolak versi yang tidak dikenalnya. |
 | `generated_at` | Waktu job selesai, UTC. Dashboard memakainya untuk label "diperbarui X lalu". |
+| `is_sample` | Opsional. `true` hanya untuk file contoh; dashboard menampilkan banner "Data contoh". Job produksi tidak menulis field ini. |
 | `categories` | Urutan di sini **adalah urutan warna** di dashboard (slot 1 sampai 6). Jangan ubah urutan atau `id` yang sudah ada; menambah kategori hanya dengan menaikkan `schema_version`. Maksimum 6. |
 | `days[].date` | Hari WIB, `YYYY-MM-DD`, berurutan tanpa celah, dari lama ke baru. |
 | `days[].blocked` | Jumlah request diblokir per kategori. Setiap `id` di `categories` wajib ada, nol jika tidak ada. |

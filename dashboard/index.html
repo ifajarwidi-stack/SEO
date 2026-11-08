@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Jago.com Security Monitoring</title>
+<!-- Internal. Tanpa font, skrip, atau gambar dari pihak ketiga: satu-satunya permintaan jaringan adalah security-daily.json. -->
+<style>
+/* Layout: baris filter, strip KPI, lalu tren (lebar) di samping peringkat kategori. Satu dunia gelap. */
+:root {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --ring: rgba(255,255,255,0.10);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* kategori slot 1-6, langkah gelap, urutan tetap mengikuti urutan `categories` di file data */
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--font); }
+body { padding: 20px 16px 40px; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; color: var(--ink-2); padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.seg button:hover:not(:disabled) { background: rgba(255,255,255,0.06); }
+.seg button[aria-pressed="true"] { background: #2c2c2a; color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--ring); }
+.seg button:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
+
+.banner { display: flex; gap: 10px; align-items: center; background: rgba(250,178,25,0.08); border: 1px solid rgba(250,178,25,0.28); color: #f3d38a; border-radius: 10px; padding: 9px 14px; font-size: 13px; }
+.banner.crit { background: rgba(208,59,59,0.10); border-color: rgba(208,59,59,0.4); color: #f0a3a3; }
+.banner b { font-weight: 600; }
+
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+.card h2 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }
+.card .hint { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+.err h2 { font-size: 16px; margin-bottom: 8px; }
+.err p { margin: 0 0 6px; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+.err code { background: #242422; border-radius: 4px; padding: 1px 6px; font-size: 12px; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi { display: flex; flex-direction: column; gap: 4px; min-height: 128px; }
+.kpi .lbl { font-size: 12px; color: var(--muted); font-weight: 500; }
+.kpi .val { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.kpi .val.sm { font-size: 22px; line-height: 1.25; }
+.kpi .note { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kpi svg.spark { width: 100%; height: 30px; margin-top: auto; display: block; }
+.delta { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.delta.up { color: #e66767; }
+.delta.down { color: #3fc43f; }
+.delta svg { width: 10px; height: 10px; }
+.share { margin-top: auto; height: 6px; background: var(--grid); border-radius: 3px; overflow: hidden; }
+.share i { display: block; height: 100%; border-radius: 3px; }
+
+.main { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 12px; }
+.chart-wrap { position: relative; outline: none; }
+.chart-wrap:focus-visible { outline: 2px solid var(--s1); outline-offset: 4px; border-radius: 6px; }
+svg.chart { width: 100%; display: block; touch-action: pan-y; }
+.axis text { fill: var(--muted); font-size: 11px; font-family: var(--font); font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; z-index: 5; background: #242422; border: 1px solid var(--ring); border-radius: 10px; padding: 9px 11px; min-width: 176px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 12px; opacity: 0; transition: opacity .08s; }
+.tip.on { opacity: 1; }
+.tip .th { color: var(--ink-2); font-weight: 600; margin-bottom: 6px; }
+.tip .tr { display: flex; align-items: center; gap: 8px; padding: 1.5px 0; }
+.tip .tr .k { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+.tip .tr .n { color: var(--ink-2); flex: 1; }
+.tip .tr .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .tr.dim { opacity: .45; }
+.tip .tt { display: flex; justify-content: space-between; border-top: 1px solid var(--axis); margin-top: 6px; padding-top: 6px; font-weight: 600; }
+
+.rank { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.rank button { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 8px 10px; cursor: pointer; text-align: left; }
+.rank button:hover { background: rgba(255,255,255,0.05); }
+.rank button[aria-pressed="true"] { background: rgba(255,255,255,0.07); border-color: var(--ring); }
+.rank .nm { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; min-width: 0; }
+.rank .nm i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.rank .nv { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rank .nv small { color: var(--muted); font-weight: 500; margin-left: 6px; }
+.rank .bar { grid-column: 1 / -1; height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+.rank .bar i { display: block; height: 100%; border-radius: 0 4px 4px 0; transition: width .25s; }
+.rank.dimmed button:not([aria-pressed="true"]) { opacity: .5; }
+
+.tablebtn { align-self: flex-start; background: transparent; border: 1px solid var(--ring); color: var(--ink-2); padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+.tablebtn:hover { background: rgba(255,255,255,0.06); }
+.tscroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; }
+footer { color: var(--muted); font-size: 12px; }
+
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .main { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .kpis { grid-template-columns: 1fr; }
+  .kpi { min-height: 0; }
+  h1 { font-size: 19px; }
+}
+@media (prefers-reduced-motion: reduce) { .rank .bar i, .tip { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Jago.com Security Monitoring</h1>
+      <p class="sub" id="updated">Memuat data…</p>
+    </div>
+    <div class="seg" role="group" aria-label="Periode">
+      <button type="button" id="p7" data-p="7" aria-pressed="false">7 hari</button>
+      <button type="button" id="p30" data-p="30" aria-pressed="true">30 hari</button>
+      <button type="button" id="p360" data-p="360" aria-pressed="false">12 bulan</button>
+    </div>
+  </header>
+
+  <div class="banner" id="notice" role="status" hidden></div>
+  <section class="card err" id="error" role="alert" hidden></section>
+
+  <div id="content" class="wrap" hidden style="gap:16px">
+    <section class="kpis" id="kpis" aria-label="Ringkasan"></section>
+
+    <section class="main">
+      <div class="card">
+        <h2>Tren request diblokir</h2>
+        <p class="hint" id="trendHint"></p>
+        <div class="chart-wrap" id="chartWrap" tabindex="0" role="img" aria-label="Grafik garis tren request diblokir per kategori serangan. Gunakan panah kiri dan kanan untuk membaca nilai.">
+          <svg class="chart" id="chart"></svg>
+          <div class="tip" id="tip"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Top kategori serangan</h2>
+        <p class="hint">Klik untuk menyorot di grafik tren.</p>
+        <ul class="rank" id="rank"></ul>
+      </div>
+    </section>
+
+    <button type="button" class="tablebtn" id="tableBtn" aria-expanded="false" aria-controls="tableCard">Tampilkan tabel data</button>
+    <section class="card" id="tableCard" hidden>
+      <div class="tscroll"><table id="table"></table></div>
+    </section>
+  </div>
+
+  <footer id="foot">Sumber: Cloudflare WAF + log server, diolah di Elasticsearch. Hanya angka agregat.</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  var STALE_HOURS = 3;          // docs/jago-security-data-contract.md bagian 6
+  var REFRESH_MS = 5 * 60 * 1000;
+  var COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)'];
+  var PERIODS = { 7: '7 hari', 30: '30 hari', 360: '12 bulan' };
+
+  // ?data=nama.json hanya untuk pengujian; hanya nama berkas di folder yang sama.
+  var q = new URLSearchParams(location.search).get('data');
+  var DATA_URL = q && /^[\w.-]+\.json$/.test(q) ? q : 'security-daily.json';
+
+  var fmt = new Intl.NumberFormat('id-ID');
+  var fmt1 = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  var D = null;               // data tervalidasi
+  var state = { p: 30, sel: -1, idx: -1 };
+  var M = null;               // model periode yang sedang tampil
+
+  function $(id) { return document.getElementById(id); }
+  function fd(s, o) {
+    var a = s.split('-');
+    return new Date(Date.UTC(+a[0], +a[1] - 1, +a[2])).toLocaleDateString('id-ID', Object.assign({ timeZone: 'UTC' }, o || { day: 'numeric', month: 'short' }));
+  }
+  function el(tag, attrs, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; }
+  function h(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function sum(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s; }
+
+  // ---------- Muat dan validasi ----------
+  function validate(raw) {
+    if (!raw || typeof raw !== 'object') throw new Error('Isi berkas bukan objek JSON.');
+    if (raw.schema_version !== 1) throw new Error('schema_version ' + raw.schema_version + ' tidak dikenal. Dashboard ini mendukung versi 1.');
+    if (!Array.isArray(raw.categories) || raw.categories.length < 1 || raw.categories.length > COLORS.length) throw new Error('categories harus berisi 1 sampai ' + COLORS.length + ' kategori.');
+    if (!Array.isArray(raw.days) || !raw.days.length) throw new Error('days kosong.');
+    var ids = raw.categories.map(function (c) { return c.id; });
+    raw.days.forEach(function (d, i) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d.date)) throw new Error('Tanggal tidak valid pada baris ' + i + '.');
+      ids.forEach(function (id) { if (!Number.isInteger(d.blocked && d.blocked[id]) || d.blocked[id] < 0) throw new Error('Nilai "' + id + '" tidak valid pada ' + d.date + '.'); });
+      if (!Number.isInteger(d.bad_ip) || d.bad_ip < 0) throw new Error('bad_ip tidak valid pada ' + d.date + '.');
+    });
+    if (isNaN(Date.parse(raw.generated_at))) throw new Error('generated_at tidak valid.');
+    var lc = -1;
+    raw.days.forEach(function (d, i) { if (d.complete) lc = i; });
+    if (lc < 0) throw new Error('Belum ada hari yang lengkap.');
+    raw._lc = lc;                               // indeks hari lengkap terakhir
+    raw._open = raw.days.length - 1 > lc ? raw.days[raw.days.length - 1] : null; // hari berjalan
+    raw._vec = raw.days.map(function (d) { return ids.map(function (id) { return d.blocked[id]; }); });
+    return raw;
+  }
+
+  function load(first) {
+    return fetch(DATA_URL, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('Server menjawab ' + r.status + ' untuk ' + DATA_URL + '.');
+      return r.json();
+    }).then(function (raw) {
+      var next = validate(raw);
+      var changed = !D || D.generated_at !== next.generated_at;
+      D = next;
+      if (changed || first) show();
+      else showNotice();
+    }).catch(function (e) {
+      if (D) { showNotice('Gagal memuat pembaruan: ' + e.message + ' Menampilkan data terakhir yang berhasil dimuat.', true); return; }
+      showError(e);
+    });
+  }
+
+  function showError(e) {
+    $('content').hidden = true; $('notice').hidden = true; $('error').hidden = false;
+    $('updated').textContent = 'Data tidak tersedia';
+    var box = $('error'); box.textContent = '';
+    box.appendChild(h('h2', null, 'Data tidak bisa ditampilkan'));
+    box.appendChild(h('p', null, e.message));
+    var p = h('p', null, 'Berkas diharapkan: '); p.appendChild(h('code', null, DATA_URL)); p.appendChild(document.createTextNode('.'));
+    if (location.protocol === 'file:') {
+      p.appendChild(document.createTextNode(' Browser memblokir pembacaan berkas lewat file://; jalankan dari server, misalnya '));
+      p.appendChild(h('code', null, 'python3 -m http.server'));
+      p.appendChild(document.createTextNode(' di folder dashboard.'));
+    }
+    box.appendChild(p);
+  }
+
+  function showNotice(extra, crit) {
+    var n = $('notice'), msgs = [], isCrit = !!crit;
+    n.textContent = '';
+    if (D && D.is_sample) {
+      var b = h('b', null, 'Data contoh.');
+      n.appendChild(b); n.appendChild(document.createTextNode(' Data sintetis, bukan data asli. Angka di bawah belum bisa dipakai untuk laporan.'));
+    } else if (D) {
+      var age = (Date.now() - Date.parse(D.generated_at)) / 36e5;
+      if (age > STALE_HOURS) {
+        isCrit = true;
+        n.appendChild(h('b', null, 'Data mungkin basi.'));
+        n.appendChild(document.createTextNode(' Terakhir diperbarui ' + (age < 48 ? Math.floor(age) + ' jam' : Math.floor(age / 24) + ' hari') + ' lalu (batas ' + STALE_HOURS + ' jam). Periksa job pembaruan.'));
+      }
+    }
+    if (extra) { if (n.childNodes.length) n.appendChild(document.createElement('br')); n.appendChild(document.createTextNode(extra)); }
+    n.classList.toggle('crit', isCrit);
+    n.hidden = !n.childNodes.length;
+  }
+
+  // ---------- Model periode ----------
+  function agg(from, to) {
+    var v = D.categories.map(function () { return 0; }), bad = 0;
+    for (var i = from; i <= to; i++) { for (var k = 0; k < v.length; k++) v[k] += D._vec[i][k]; bad += D.days[i].bad_ip; }
+    return { v: v, bad: bad, total: sum(v) };
+  }
+  function span(p) { return p === 360 ? 360 : p; }
+  function avail(p) { return D._lc + 1 >= span(p); }          // cukup untuk periode ini
+  function hasPrev(p) { return D._lc + 1 >= 2 * span(p); }    // cukup untuk pembanding
+
+  function compute() {
+    var p = state.p, n = span(p), bucket = p === 360 ? 30 : 1, start = D._lc - n + 1;
+    var cur = agg(start, D._lc), prev = hasPrev(p) ? agg(start - n, start - 1) : null;
+    var buckets = [];
+    for (var b = start; b <= D._lc; b += bucket) {
+      var a = agg(b, b + bucket - 1), first = D.days[b].date, last = D.days[b + bucket - 1].date;
+      buckets.push({ v: a.v, total: a.total, first: first, last: last,
+        label: bucket === 1 ? fd(first) : fd(last, { month: 'short' }),
+        range: bucket === 1 ? fd(first, { weekday: 'short', day: 'numeric', month: 'short' }) : fd(first) + ' – ' + fd(last) });
+    }
+    return { n: n, cur: cur, prev: prev, buckets: buckets, avg: cur.total / n };
+  }
+
+  // ---------- KPI ----------
+  function delta(now, before, label) {
+    var box = h('span', 'note');
+    if (before == null || !before) { box.textContent = 'Belum ada periode pembanding'; return box; }
+    var pct = ((now - before) / before) * 100, up = pct >= 0;
+    var d = h('span', 'delta ' + (up ? 'up' : 'down'));
+    var svg = el('svg', { viewBox: '0 0 10 10', 'aria-hidden': 'true' });
+    svg.appendChild(el('path', { d: up ? 'M5 1 L9.5 9 L0.5 9 Z' : 'M5 9 L9.5 1 L0.5 1 Z', fill: 'currentColor' }));
+    d.appendChild(svg);
+    d.appendChild(document.createTextNode((up ? 'Naik ' : 'Turun ') + fmt1.format(Math.abs(pct)) + '%'));
+    box.appendChild(d); box.appendChild(document.createTextNode(label));
+    return box;
+  }
+  function spark(vals, color) {
+    var W = 200, H = 30, pad = 3;
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none', class: 'spark', 'aria-hidden': 'true' });
+    if (vals.length < 2) return svg;
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rng = mx - mn || 1;
+    var pts = vals.map(function (v, i) { return [pad + (i / (vals.length - 1)) * (W - 2 * pad - 6), H - pad - ((v - mn) / rng) * (H - 2 * pad)]; });
+    var line = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('');
+    svg.appendChild(el('path', { d: line + 'L' + pts[pts.length - 1][0] + ' ' + H + 'L' + pts[0][0] + ' ' + H + 'Z', fill: color, opacity: '0.14' }));
+    svg.appendChild(el('path', { d: line, fill: 'none', stroke: color, 'stroke-width': '2', 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke' }));
+    return svg;
+  }
+
+  function renderKpis(m) {
+    var root = $('kpis'); root.textContent = '';
+    var nm = PERIODS[state.p], cats = D.categories;
+
+    var k1 = h('div', 'card kpi');
+    k1.appendChild(h('div', 'lbl', 'Request diblokir'));
+    k1.appendChild(h('div', 'val', fmt.format(m.cur.total)));
+    k1.appendChild(delta(m.cur.total, m.prev && m.prev.total, ' vs ' + nm + ' sebelumnya'));
+    k1.appendChild(spark(m.buckets.map(function (b) { return b.total; }), 'var(--s1)'));
+    root.appendChild(k1);
+
+    // Hari berjalan belum lengkap: tampilkan angkanya tanpa membandingkan dengan rata-rata (menyesatkan).
+    var k2 = h('div', 'card kpi');
+    var s14 = []; for (var i = Math.max(0, D._lc - 13); i <= D._lc; i++) s14.push(sum(D._vec[i]));
+    if (D._open) {
+      k2.appendChild(h('div', 'lbl', 'Hari ini, berjalan (' + fd(D._open.date) + ')'));
+      k2.appendChild(h('div', 'val', fmt.format(sum(D._vec[D._vec.length - 1]))));
+      k2.appendChild(h('div', 'note', 'Belum lengkap · kemarin ' + fmt.format(sum(D._vec[D._lc]))));
+    } else {
+      var last = sum(D._vec[D._lc]);
+      k2.appendChild(h('div', 'lbl', 'Hari terakhir (' + fd(D.days[D._lc].date) + ')'));
+      k2.appendChild(h('div', 'val', fmt.format(last)));
+      k2.appendChild(delta(last, m.avg, ' vs rata-rata ' + nm));
+    }
+    k2.appendChild(spark(s14, 'var(--s1)'));
+    root.appendChild(k2);
+
+    var bp = m.cur.total ? (m.cur.bad / m.cur.total) * 100 : 0;
+    var k3 = h('div', 'card kpi');
+    k3.appendChild(h('div', 'lbl', 'Dari IP reputasi buruk'));
+    k3.appendChild(h('div', 'val', fmt1.format(bp) + '%'));
+    k3.appendChild(h('div', 'note', fmt.format(m.cur.bad) + ' request · AbuseIPDB & AlienVault'));
+    var sh3 = h('div', 'share'), f3 = h('i'); f3.style.width = bp + '%'; f3.style.background = 'var(--ink-2)'; sh3.appendChild(f3);
+    k3.appendChild(sh3); root.appendChild(k3);
+
+    var ti = 0; for (var t = 1; t < cats.length; t++) if (m.cur.v[t] > m.cur.v[ti]) ti = t;
+    var tp = m.cur.total ? (m.cur.v[ti] / m.cur.total) * 100 : 0;
+    var k4 = h('div', 'card kpi');
+    k4.appendChild(h('div', 'lbl', 'Kategori serangan teratas'));
+    k4.appendChild(h('div', 'val sm', cats[ti].label));
+    k4.appendChild(h('div', 'note', fmt.format(m.cur.v[ti]) + ' request · ' + fmt1.format(tp) + '% dari total'));
+    var sh4 = h('div', 'share'), f4 = h('i'); f4.style.width = tp + '%'; f4.style.background = COLORS[ti]; sh4.appendChild(f4);
+    k4.appendChild(sh4); root.appendChild(k4);
+  }
+
+  // ---------- Peringkat ----------
+  function renderRank(m) {
+    var root = $('rank'), cats = D.categories; root.textContent = '';
+    root.classList.toggle('dimmed', state.sel >= 0);
+    var order = cats.map(function (_, i) { return i; }).sort(function (a, b) { return m.cur.v[b] - m.cur.v[a]; });
+    var mx = m.cur.v[order[0]] || 1;
+    order.forEach(function (k) {
+      var li = document.createElement('li'), b = h('button');
+      b.type = 'button'; b.setAttribute('aria-pressed', String(state.sel === k));
+      var nmEl = h('span', 'nm'), sw = h('i'); sw.style.background = COLORS[k]; nmEl.appendChild(sw); nmEl.appendChild(document.createTextNode(cats[k].label));
+      var share = m.cur.total ? (m.cur.v[k] / m.cur.total) * 100 : 0;
+      var nv = h('span', 'nv', fmt.format(m.cur.v[k])); nv.appendChild(h('small', null, fmt1.format(share) + '%'));
+      var bar = h('span', 'bar'), fill = h('i'); fill.style.width = (m.cur.v[k] / mx) * 100 + '%'; fill.style.background = COLORS[k]; bar.appendChild(fill);
+      b.appendChild(nmEl); b.appendChild(nv); b.appendChild(bar);
+      b.addEventListener('click', function () { state.sel = state.sel === k ? -1 : k; render(); });
+      li.appendChild(b); root.appendChild(li);
+    });
+  }
+
+  // ---------- Grafik tren ----------
+  function niceMax(v) {
+    var p = Math.pow(10, Math.floor(Math.log10(v || 1))), n = v / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+  }
+  function renderChart(m) {
+    M = m;
+    var cats = D.categories, svg = $('chart'), wrap = $('chartWrap');
+    var W = Math.max(280, wrap.clientWidth), Ht = W < 520 ? 250 : 300;
+    var mg = { l: 58, r: 14, t: 10, b: 26 };
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + Ht); svg.setAttribute('height', Ht); svg.textContent = '';
+    var n = m.buckets.length, mxv = 0;
+    m.buckets.forEach(function (b) { b.v.forEach(function (x) { if (x > mxv) mxv = x; }); });
+    var top = niceMax(mxv * 1.05), ticks = 4, iw = W - mg.l - mg.r, ih = Ht - mg.t - mg.b;
+    function X(i) { return mg.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw); }
+    function Y(v) { return mg.t + ih - (v / top) * ih; }
+    m._X = X; m._W = W; m._Y = Y;
+
+    var ax = el('g', { class: 'axis' });
+    for (var g = 0; g <= ticks; g++) {
+      var val = (top / ticks) * g, y = Y(val);
+      ax.appendChild(el('line', { x1: mg.l, x2: W - mg.r, y1: y, y2: y, stroke: g === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1 }));
+      ax.appendChild(el('text', { x: mg.l - 8, y: y + 4, 'text-anchor': 'end' }, fmt.format(Math.round(val))));
+    }
+    var every = Math.ceil(n / (W < 520 ? 4 : 7));
+    m.buckets.forEach(function (b, i) {
+      var isLast = i === n - 1, regular = i % every === 0 && (n - 1 - i >= every * 0.75 || isLast);
+      if (regular || isLast) ax.appendChild(el('text', { x: X(i), y: Ht - 7, 'text-anchor': i === 0 ? 'start' : isLast ? 'end' : 'middle' }, b.label));
+    });
+    svg.appendChild(ax);
+
+    var lines = el('g', {});
+    cats.forEach(function (_, k) {
+      var on = state.sel < 0 || state.sel === k;
+      var d = m.buckets.map(function (b, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(b.v[k]).toFixed(1); }).join('');
+      lines.appendChild(el('path', { d: d, fill: 'none', stroke: COLORS[k], 'stroke-width': state.sel === k ? 3 : 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', opacity: on ? 1 : 0.2 }));
+      lines.appendChild(el('circle', { cx: X(n - 1), cy: Y(m.buckets[n - 1].v[k]), r: 4, fill: COLORS[k], stroke: 'var(--surface)', 'stroke-width': 2, opacity: on ? 1 : 0.2 }));
+    });
+    svg.appendChild(lines);
+
+    var cross = el('g', { id: 'cross', style: 'display:none' });
+    cross.appendChild(el('line', { id: 'crossLine', y1: mg.t, y2: mg.t + ih, stroke: 'var(--ink-2)', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: 0.7 }));
+    cats.forEach(function (_, k) { cross.appendChild(el('circle', { class: 'cd', r: 4, fill: COLORS[k], stroke: 'var(--surface)', 'stroke-width': 2 })); });
+    svg.appendChild(cross);
+
+    var hit = el('rect', { x: mg.l, y: 0, width: iw, height: Ht, fill: 'transparent' });
+    svg.appendChild(hit);
+    hit.addEventListener('pointermove', function (e) {
+      var r = svg.getBoundingClientRect(), px = ((e.clientX - r.left) / r.width) * W;
+      showAt(Math.max(0, Math.min(n - 1, Math.round(((px - mg.l) / iw) * (n - 1)))));
+    });
+    hit.addEventListener('pointerleave', hideTip);
+    if (state.idx >= 0 && document.activeElement === wrap) showAt(Math.min(state.idx, n - 1));
+  }
+
+  function showAt(i) {
+    state.idx = i;
+    var cats = D.categories, b = M.buckets[i], X = M._X, W = M._W, tip = $('tip'), wrap = $('chartWrap'), cross = $('cross');
+    cross.style.display = '';
+    var x = X(i), ln = $('crossLine'); ln.setAttribute('x1', x); ln.setAttribute('x2', x);
+    var dots = cross.querySelectorAll('.cd');
+    cats.forEach(function (_, k) { dots[k].setAttribute('cx', x); dots[k].setAttribute('cy', M._Y(b.v[k])); dots[k].setAttribute('opacity', state.sel < 0 || state.sel === k ? 1 : 0.2); });
+    tip.textContent = '';
+    tip.appendChild(h('div', 'th', b.range));
+    cats.map(function (_, k) { return k; }).sort(function (a, c) { return b.v[c] - b.v[a]; }).forEach(function (k) {
+      var row = h('div', 'tr' + (state.sel >= 0 && state.sel !== k ? ' dim' : '')), key = h('span', 'k'); key.style.background = COLORS[k];
+      row.appendChild(key); row.appendChild(h('span', 'n', cats[k].label)); row.appendChild(h('span', 'v', fmt.format(b.v[k])));
+      tip.appendChild(row);
+    });
+    var tt = h('div', 'tt'); tt.appendChild(h('span', null, 'Total')); tt.appendChild(h('span', null, fmt.format(b.total)));
+    tip.appendChild(tt); tip.classList.add('on');
+    var tw = tip.offsetWidth, scale = wrap.clientWidth / W, left = x * scale + 14;
+    if (left + tw > wrap.clientWidth) left = x * scale - tw - 14;
+    tip.style.left = Math.max(0, left) + 'px'; tip.style.top = '8px';
+  }
+  function hideTip() { $('tip').classList.remove('on'); var c = $('cross'); if (c) c.style.display = 'none'; }
+
+  $('chartWrap').addEventListener('keydown', function (e) {
+    if (!M) return;
+    var n = M.buckets.length, i = state.idx < 0 ? n - 1 : state.idx;
+    if (e.key === 'ArrowLeft') i = Math.max(0, i - 1);
+    else if (e.key === 'ArrowRight') i = Math.min(n - 1, i + 1);
+    else if (e.key === 'Escape') { hideTip(); state.idx = -1; return; }
+    else return;
+    e.preventDefault(); showAt(i);
+  });
+  $('chartWrap').addEventListener('blur', hideTip);
+
+  // ---------- Tabel ----------
+  function renderTable(m) {
+    var t = $('table'); t.textContent = '';
+    var thead = document.createElement('thead'), hr = document.createElement('tr');
+    ['Periode'].concat(D.categories.map(function (c) { return c.label; })).concat(['Total']).forEach(function (c) { var th = h('th', null, c); th.scope = 'col'; hr.appendChild(th); });
+    thead.appendChild(hr); t.appendChild(thead);
+    var tb = document.createElement('tbody');
+    m.buckets.slice().reverse().forEach(function (b) {
+      var tr = document.createElement('tr'); tr.appendChild(h('td', null, b.range));
+      b.v.forEach(function (x) { tr.appendChild(h('td', null, fmt.format(x))); });
+      tr.appendChild(h('td', null, fmt.format(b.total))); tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+
+  // ---------- Render ----------
+  function render() {
+    // pilih periode yang datanya cukup
+    if (!avail(state.p)) state.p = [30, 7, 360].filter(avail)[0];
+    if (!state.p) { showError(new Error('Data lengkap kurang dari 7 hari; belum cukup untuk ditampilkan.')); return; }
+    [7, 30, 360].forEach(function (p) {
+      var b = $('p' + p); b.disabled = !avail(p);
+      b.title = avail(p) ? '' : 'Butuh minimal ' + span(p) + ' hari data lengkap (ada ' + (D._lc + 1) + ').';
+      b.setAttribute('aria-pressed', String(p === state.p));
+    });
+    var m = compute();
+    $('trendHint').textContent = (state.p === 360 ? 'Per 30 hari, 12 blok terakhir' : 'Per hari, ' + PERIODS[state.p] + ' terakhir') + ' · jumlah request diblokir';
+    renderKpis(m); renderRank(m); renderChart(m); renderTable(m);
+  }
+  function show() {
+    $('error').hidden = true; $('content').hidden = false;
+    var gen = new Date(D.generated_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    $('updated').textContent = 'Data lengkap hingga ' + fd(D.days[D._lc].date, { day: 'numeric', month: 'long', year: 'numeric' }) + ' · diperbarui ' + gen + ' WIB';
+    showNotice(); render();
+  }
+
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () { if (b.disabled) return; state.p = +b.dataset.p; state.idx = -1; hideTip(); render(); });
+  });
+  var tb = $('tableBtn'), tc = $('tableCard');
+  tb.addEventListener('click', function () {
+    var open = tc.hidden; tc.hidden = !open; tb.setAttribute('aria-expanded', String(open));
+    tb.textContent = open ? 'Sembunyikan tabel data' : 'Tampilkan tabel data';
+  });
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (D && M) renderChart(compute()); }, 80); });
+
+  load(true);
+  setInterval(function () { load(false); }, REFRESH_MS);
+})();
+</script>
+</body>
+</html>

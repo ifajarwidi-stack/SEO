@@ -10,6 +10,7 @@
     "schema_version": { "const": 1 },
     "generated_at": { "type": "string", "format": "date-time" },
     "timezone": { "const": "Asia/Jakarta" },
+    "is_sample": { "type": "boolean", "description": "true untuk data contoh; dashboard menampilkan banner dan tidak memberi peringatan data basi." },
     "categories": {
       "type": "array",
       "minItems": 1,
